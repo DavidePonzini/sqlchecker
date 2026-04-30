@@ -1,7 +1,7 @@
 from tests import *
 import pytest
 
-ERROR = SqlErrors.SYN_13_DATA_TYPE_MISMATCH
+ERROR = SqlErrors.DATA_TYPE_MISMATCH
 CATALOG = 'miedema'
 
 @pytest.mark.parametrize('query,errors', [

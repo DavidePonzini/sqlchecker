@@ -1,81 +1,47 @@
 from tests import *
+import pytest
 
-def test_grouping_columns_ok():
+ERROR = SqlErrors.EXTRANEOUS_OR_OMITTED_GROUPING_COLUMN
+
+@pytest.mark.parametrize('query', [
+    'SELECT id, sum(col2) FROM store GROUP BY id',
+])
+def test_correct(query):
     detected_errors = run_test(
-        query='SELECT id, sum(col2) FROM store GROUP BY id',
+        query=query,
         detectors=[SyntaxErrorDetector],
     )
 
-    assert count_errors(detected_errors, SqlErrors.SYN_16_EXTRANEOUS_OR_OMITTED_GROUPING_COLUMN) == 0
+    assert count_errors(detected_errors, ERROR) == 0
 
-def test_extraneous_grouping_column():
+@pytest.mark.parametrize('query, errors', [
+    (
+        'SELECT id, sum(col2) FROM store GROUP BY id, col2',
+        [('col2', 'ONLY IN GROUP BY')],
+    ),
+    (
+        'SELECT id, SUM(col2) FROM store GROUP BY 1, 2',
+        [('SUM(col2)', 'AGGREGATED IN GROUP BY')],
+    ),
+    (
+        'SELECT id, SUM(col2) FROM store GROUP BY id, SUM(col2)',
+        [('SUM(col2)', 'AGGREGATED IN GROUP BY')],
+    ),
+    (
+        'SELECT id, col2, sum(col3) FROM store GROUP BY id',
+        [('col2', 'ONLY IN SELECT')],
+    ),
+    (
+        'SELECT id, col2, sum(col3) FROM store GROUP BY id, col4',
+        [('col2', 'ONLY IN SELECT'), ('col4', 'ONLY IN GROUP BY')],
+    ),
+])
+def test_wrong(query, errors):
     detected_errors = run_test(
-        query='SELECT id, sum(col2) FROM store GROUP BY id, col2',
+        query=query,
         detectors=[SyntaxErrorDetector],
     )
 
-    assert count_errors(detected_errors, SqlErrors.SYN_16_EXTRANEOUS_OR_OMITTED_GROUPING_COLUMN) == 1
-    assert has_error(
-        detected_errors,
-        SqlErrors.SYN_16_EXTRANEOUS_OR_OMITTED_GROUPING_COLUMN,
-        ('col2', 'ONLY IN GROUP BY'),
-    )
-
-def test_aggregated_column_in_group_by():
-    detected_errors = run_test(
-        query='SELECT id, SUM(col2) FROM store GROUP BY 1, 2',
-        detectors=[SyntaxErrorDetector],
-    )
-
-    assert count_errors(detected_errors, SqlErrors.SYN_16_EXTRANEOUS_OR_OMITTED_GROUPING_COLUMN) == 1
-    assert has_error(
-        detected_errors,
-        SqlErrors.SYN_16_EXTRANEOUS_OR_OMITTED_GROUPING_COLUMN,
-        ('SUM(col2)', 'AGGREGATED IN GROUP BY'),
-    )
-
-def test_aggregated_column_in_group2():
-    detected_errors = run_test(
-        query='SELECT id, SUM(col2) FROM store GROUP BY id, SUM(col2)',
-        detectors=[SyntaxErrorDetector],
-    )
-
-    assert count_errors(detected_errors, SqlErrors.SYN_16_EXTRANEOUS_OR_OMITTED_GROUPING_COLUMN) == 1
-    assert has_error(
-        detected_errors,
-        SqlErrors.SYN_16_EXTRANEOUS_OR_OMITTED_GROUPING_COLUMN,
-        ('SUM(col2)', 'AGGREGATED IN GROUP BY'),
-    )
-
-def test_omitted_grouping_column():
-    detected_errors = run_test(
-        query='SELECT id, col2, sum(col3) FROM store GROUP BY id',
-        detectors=[SyntaxErrorDetector],
-    )
-
-    assert count_errors(detected_errors, SqlErrors.SYN_16_EXTRANEOUS_OR_OMITTED_GROUPING_COLUMN) == 1
-    assert has_error(
-        detected_errors,
-        SqlErrors.SYN_16_EXTRANEOUS_OR_OMITTED_GROUPING_COLUMN,
-        ('col2', 'ONLY IN SELECT'),
-    )
-
-def test_extraneous_and_omitted_grouping_columns():
-    detected_errors = run_test(
-        query='SELECT id, col2, sum(col3) FROM store GROUP BY id, col4',
-        detectors=[SyntaxErrorDetector],
-    )
-
-    assert count_errors(detected_errors, SqlErrors.SYN_16_EXTRANEOUS_OR_OMITTED_GROUPING_COLUMN) == 2
-    
-    assert has_error(
-        detected_errors,
-        SqlErrors.SYN_16_EXTRANEOUS_OR_OMITTED_GROUPING_COLUMN,
-        ('col2', 'ONLY IN SELECT'),
-    )
-
-    assert has_error(
-        detected_errors,
-        SqlErrors.SYN_16_EXTRANEOUS_OR_OMITTED_GROUPING_COLUMN,
-        ('col4', 'ONLY IN GROUP BY'),
-    )
+    assert count_errors(detected_errors, ERROR) == len(errors)
+    for error in errors:
+        assert has_error(detected_errors, ERROR, error)

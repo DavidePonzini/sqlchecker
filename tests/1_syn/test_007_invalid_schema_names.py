@@ -1,7 +1,7 @@
 from tests import *
 import pytest
 
-ERROR = SqlErrors.SYN_8_INVALID_SCHEMA_NAME
+ERROR = SqlErrors.INVALID_SCHEMA_NAME
 
 @pytest.mark.parametrize('query,value,schema,search_path', [
     ('SELECT * FROM notaschema.store;', 'notaschema.store', None, 'public'),

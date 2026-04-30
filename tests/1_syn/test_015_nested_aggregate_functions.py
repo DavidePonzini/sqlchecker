@@ -1,7 +1,7 @@
 from tests import *
 import pytest
 
-ERROR = SqlErrors.SYN_15_AGGREGATE_FUNCTIONS_CANNOT_BE_NESTED
+ERROR = SqlErrors.AGGREGATE_FUNCTIONS_CANNOT_BE_NESTED
 
 @pytest.mark.parametrize('query, aggregates', [
     (

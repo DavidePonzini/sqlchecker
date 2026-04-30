@@ -1,7 +1,7 @@
 from tests import *
 import pytest
 
-ERROR = SqlErrors.SYN_35_IS_WHERE_NOT_APPLICABLE
+ERROR = SqlErrors.IS_WHERE_NOT_APPLICABLE
 CATALOG = 'miedema'
 
 @pytest.mark.parametrize('query,errors', [

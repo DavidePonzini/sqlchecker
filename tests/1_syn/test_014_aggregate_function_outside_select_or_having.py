@@ -1,7 +1,7 @@
 from tests import *
 import pytest
 
-ERROR = SqlErrors.SYN_14_USING_AGGREGATE_FUNCTION_OUTSIDE_SELECT_OR_HAVING
+ERROR = SqlErrors.AGGREGATE_FUNCTION_OUTSIDE_SELECT_OR_HAVING
 
 @pytest.mark.parametrize('query,errors', [
     ('SELECT * FROM orders WHERE SUM(amount) > 100;', [('SUM', 'WHERE')]),

@@ -1,7 +1,7 @@
 from tests import *
 import pytest
 
-ERROR = SqlErrors.SYN_5_UNDEFINED_FUNCTION
+ERROR = SqlErrors.UNDEFINED_FUNCTION
 
 @pytest.mark.parametrize('query,func,clause,schema', [
     ('SELECT notafunction() FROM store;', 'notafunction', 'SELECT', None),

@@ -1,7 +1,7 @@
 from tests import *
 import pytest
 
-ERROR = SqlErrors.SYN_9_MISSPELLINGS
+ERROR = SqlErrors.MISSPELLINGS
 
 @pytest.mark.parametrize('query,expected_corrections', [
     ('SELECT * FROM miedma.store;', [('miedma.store', '"miedema"."store"')]),

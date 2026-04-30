@@ -1,7 +1,7 @@
 from tests import *
 import pytest
 
-ERROR = SqlErrors.SYN_6_UNDEFINED_PARAMETER
+ERROR = SqlErrors.UNDEFINED_PARAMETER
 
 @pytest.mark.parametrize('query,value,schema', [
     ('SELECT * FROM table WHERE id = :id;', ':id', None),

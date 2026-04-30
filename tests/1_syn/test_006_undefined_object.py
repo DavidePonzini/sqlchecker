@@ -1,7 +1,7 @@
 from tests import *
 import pytest
 
-ERROR = SqlErrors.SYN_7_UNDEFINED_OBJECT
+ERROR = SqlErrors.UNDEFINED_OBJECT
 
 @pytest.mark.parametrize('query,objects,schema', [
     ('SELECT * FROM store;', ('store',), None),

@@ -1,7 +1,7 @@
 from tests import *
 import pytest
 
-ERROR = SqlErrors.SYN_4_UNDEFINED_COLUMN
+ERROR = SqlErrors.UNDEFINED_COLUMN
 
 @pytest.mark.parametrize('query,column,schema', [
     ('SELECT id FROM store;', 'id', 'miedema'),

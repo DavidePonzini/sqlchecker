@@ -2,7 +2,7 @@ from tests import *
 import pytest
 import itertools
 
-ERROR = SqlErrors.SYN_2_AMBIGUOUS_COLUMN
+ERROR = SqlErrors.AMBIGUOUS_COLUMN
 
 @pytest.mark.parametrize('query,column,table_aliases,schema', [
     ('SELECT street FROM store s, customer c;', 'street', ['s.street', 'c.street'], 'miedema'),
