@@ -1,15 +1,12 @@
 '''Detector for logical errors in SQL queries.'''
 
 from dataclasses import dataclass
-import difflib
-import re
-import sqlparse
-import sqlparse.keywords
 from typing import Callable
 from sql_error_taxonomy import SqlErrors
+from sqlglot import exp
 
 from .base import BaseDetector, DetectedError
-from sqlscope.query import Query, Select, SetOperation
+from sqlscope.query import Query, SetOperation
 
 class LogicalErrorDetector(BaseDetector):
     '''Detector for logical errors in SQL queries.'''
@@ -35,34 +32,51 @@ class LogicalErrorDetector(BaseDetector):
         results: list[DetectedError] = super().run()
 
         checks = [
-            self.log_52_or_instead_of_and,
-            self.log_53_extraneous_not_operator,
-            self.log_54_missing_not_operator,
-            self.log_55_substituting_existance_negation_with_less_more_than,
-            self.log_56_putting_not_in_front_of_incorrect_in_exists,
-            self.log_57_incorrect_comparison_operator_or_value,
-            self.log_58_log_59_log_62_join_errors,
-            self.log_60_join_on_incorrect_column,
-            self.log_61_join_with_incorrect_comparison_operator,
-            self.log_63_improper_nesting_of_expressions,
-            self.log_64_improper_nesting_of_subqueries,
-            self.log_65_extraneous_quotes,
-            self.log_66_missing_expression,
-            self.log_67_expression_on_incorrect_column,
-            self.log_68_extraneous_expression,
-            self.log_69_expression_on_incorrect_clause,
-            self.log_70_extraneous_column_in_select,
-            self.log_71_missing_column_from_select,
-            self.log_72_missing_distinct_from_select,
-            self.log_73_missing_as_from_select,
-            self.log_74_missing_column_from_order_by,
-            self.log_75_incorrect_column_in_order_by,
-            self.log_76_extraneous_order_by_clause,
-            self.log_77_incorrect_ordering_of_rows,
-            self.log_78_distinct_as_function_parameter_when_not_applicable,
-            self.log_79_missing_distinct_from_function_parameter,
-            self.log_80_incorrect_function,
-            self.log_81_incorrect_column_as_function_parameter,
+            self.detect_47_and_instead_of_or,
+            self.detect_48_or_instead_of_and,
+            self.detect_49_extraneous_not_operator,
+            self.detect_50_missing_not_operator,
+            self.detect_51_substituted_existance_negation_with_less_more_than,
+            self.detect_52_incorrect_comparison_operator_or_value,
+            self.detect_53_54_55_table_reference_errors,
+            self.detect_56_join_condition_on_incorrect_column,
+            self.detect_57_join_condition_with_incorrect_comparison_operator,
+            self.detect_58_omitted_join_condition,
+            self.detect_59_condition_on_outer_join,
+            self.detect_60_improper_nesting_of_expressions,
+            self.detect_61_improper_nesting_of_subqueries,
+            self.detect_62_extraneous_quotes,
+            self.detect_63_missing_expression,
+            self.detect_64_extraneous_expression,
+            self.detect_65_expression_on_incorrect_column,
+            self.detect_66_expression_on_incorrect_clause,
+            self.detect_67_wildcards_without_like,
+            self.detect_68_69_wrong_invalid_wildcard,
+            self.detect_70_extraneous_column_in_select,
+            self.detect_71_missing_column_from_select,
+            self.detect_72_missing_distinct_from_select,
+            self.detect_73_missing_as_from_select,
+            self.detect_74_missing_column_from_order_by,
+            self.detect_75_incorrect_column_in_order_by,
+            self.detect_76_incorrect_ordering_of_rows,
+            self.detect_77_missing_where_clause,
+            self.detect_78_missing_group_by_clause,
+            self.detect_79_missing_having_clause,
+            self.detect_80_missing_order_by_clause,
+            self.detect_81_missing_limit_clause,
+            self.detect_82_missing_offset_clause,
+            self.detect_83_extraneous_where_clause,
+            self.detect_84_extraneous_group_by_clause,
+            self.detect_85_extraneous_having_clause,
+            self.detect_86_extraneous_order_by_clause,
+            self.detect_87_extraneous_limit_clause,
+            self.detect_88_extraneous_offset_clause,
+            self.detect_89_incorrect_limit,
+            self.detect_90_incorrect_offset,
+            self.detect_91_incorrect_function,
+            self.detect_92_distinct_as_function_parameter_when_not_applicable,
+            self.detect_93_missing_distinct_from_function_parameter,
+            self.detect_94_incorrect_column_as_function_parameter,
         ]
 
         for chk in checks:
@@ -70,8 +84,12 @@ class LogicalErrorDetector(BaseDetector):
 
         return results
         
+    # TODO: implement
+    def detect_47_and_instead_of_or(self) -> list[DetectedError]:
+        return []
+
     # TODO: refactor
-    def log_52_or_instead_of_and(self) -> list[DetectedError]:
+    def detect_48_or_instead_of_and(self) -> list[DetectedError]:
         '''
         Detects if OR is used instead of AND in the WHERE or HAVING clauses
         by comparing the query's AST against the correct solution's AST.
@@ -104,23 +122,19 @@ class LogicalErrorDetector(BaseDetector):
         return results
     
     # TODO: implement
-    def log_53_extraneous_not_operator(self) -> list[DetectedError]:
+    def detect_49_extraneous_not_operator(self) -> list[DetectedError]:
         return []
     
     # TODO: implement
-    def log_54_missing_not_operator(self) -> list[DetectedError]:
+    def detect_50_missing_not_operator(self) -> list[DetectedError]:
         return []
     
     # TODO: implement
-    def log_55_substituting_existance_negation_with_less_more_than(self) -> list[DetectedError]:
-        return []
-    
-    # TODO: implement
-    def log_56_putting_not_in_front_of_incorrect_in_exists(self) -> list[DetectedError]:
+    def detect_51_substituted_existance_negation_with_less_more_than(self) -> list[DetectedError]:
         return []
     
     # TODO: refactor
-    def log_57_incorrect_comparison_operator_or_value(self) -> list[DetectedError]:
+    def detect_52_incorrect_comparison_operator_or_value(self) -> list[DetectedError]:
         '''
         Flags errors in comparison operators or values in WHERE and HAVING clauses.
         
@@ -175,7 +189,7 @@ class LogicalErrorDetector(BaseDetector):
                     ))
         return results
     
-    def log_58_log_59_log_62_join_errors(self) -> list[DetectedError]:
+    def detect_53_54_55_table_reference_errors(self) -> list[DetectedError]:
         '''
             Detects join-related errors by comparing the tables used in the proposed query
             against those in the correct solutions.
@@ -223,147 +237,206 @@ class LogicalErrorDetector(BaseDetector):
 
         if len(actual_tables) < len(common_expected_tables):
             for missing_table in common_expected_tables - actual_tables:
-                results.append(DetectedError(SqlErrors.LOG_62_MISSING_JOIN, (missing_table.table, missing_table.column)))
+                results.append(DetectedError(SqlErrors.MISSING_TABLE_REFERENCE, (missing_table.table, missing_table.column)))
         elif len(actual_tables) > len(all_expected_tables):
             for extra_table in actual_tables - all_expected_tables:
-                results.append(DetectedError(SqlErrors.LOG_59_JOIN_WHEN_JOIN_NEEDS_TO_BE_OMITTED, (extra_table.table, extra_table.column)))
+                results.append(DetectedError(SqlErrors.EXTRANEOUS_TABLE_REFERENCE, (extra_table.table, extra_table.column)))
         else:
             for wrong_table in actual_tables - all_expected_tables:
-                results.append(DetectedError(SqlErrors.LOG_58_JOIN_ON_INCORRECT_TABLE, (wrong_table.table, wrong_table.column)))
+                results.append(DetectedError(SqlErrors.INCORRECT_TABLE_REFERENCE, (wrong_table.table, wrong_table.column)))
 
         return results
 
     
     # TODO: implement
-    def log_60_join_on_incorrect_column(self) -> list[DetectedError]:
+    def detect_56_join_condition_on_incorrect_column(self) -> list[DetectedError]:
         return []
     
     # TODO: implement
-    def log_61_join_with_incorrect_comparison_operator(self) -> list[DetectedError]:
-        return []
-
-    # TODO: implement
-    def log_63_improper_nesting_of_expressions(self) -> list[DetectedError]:
+    def detect_57_join_condition_with_incorrect_comparison_operator(self) -> list[DetectedError]:
         return []
     
     # TODO: implement
-    def log_64_improper_nesting_of_subqueries(self) -> list[DetectedError]:
+    def detect_58_omitted_join_condition(self) -> list[DetectedError]:
         return []
     
     # TODO: implement
-    def log_65_extraneous_quotes(self) -> list[DetectedError]:
+    def detect_59_condition_on_outer_join(self) -> list[DetectedError]:
         return []
 
-    # TODO: refactor
-    def log_66_missing_expression(self) -> list[DetectedError]:
-        '''Flags when a required expression is missing from the SELECT clause.'''
+    # TODO: implement
+    def detect_60_improper_nesting_of_expressions(self) -> list[DetectedError]:
+        return []
+    
+    # TODO: implement
+    def detect_61_improper_nesting_of_subqueries(self) -> list[DetectedError]:
+        return []
+    
+    # TODO: implement
+    def detect_62_extraneous_quotes(self) -> list[DetectedError]:
         return []
 
-        results = []
-        if not self.q_ast or not self.s_ast:
-            return results
-
-        # Get structured expressions from both the proposed and correct queries
-        q_exprs = self._get_structured_expressions(self.q_ast)
-        s_exprs = self._get_structured_expressions(self.s_ast)
-
-        # Convert to case-insensitive tuples for comparison
-        q_expr_set = {(func.lower(), col.lower()) for func, col in q_exprs}
-        s_expr_set = {(func.lower(), col.lower()) for func, col in s_exprs}
-
-        missing_expressions = s_expr_set - q_expr_set
-        
-        for func, col in missing_expressions:
-            # Format the expression string for the error message
-            expr_str = f"{func.upper()}({col})"
-            results.append((
-                SqlErrors.LOG_66_MISSING_EXPRESSION,
-                f"The expression '{expr_str}' is missing from the SELECT clause."
-            ))
-            
-        return results
-
-    # TODO: refactor
-    def log_67_expression_on_incorrect_column(self) -> list[DetectedError]:
-        '''Flags when an expression (e.g., AVG) is used on an incorrect column.'''
+    # TODO: implement
+    def detect_63_missing_expression(self) -> list[DetectedError]:
         return []
-        
-        results = []
-        if not self.q_ast or not self.s_ast:
-            return results
 
-        q_exprs = self._get_structured_expressions(self.q_ast)
-        s_exprs = self._get_structured_expressions(self.s_ast)
+    # TODO: implement
+    def detect_64_extraneous_expression(self) -> list[DetectedError]:
+        return []
+    
+    # TODO: implement
+    def detect_65_expression_on_incorrect_column(self) -> list[DetectedError]:
+        return []
 
-        # Convert to case-insensitive for comparison
-        s_expr_set = {(func.lower(), col.lower()) for func, col in s_exprs}
-        
-        # Create sets of all functions and columns used correctly in the solution's expressions
-        s_funcs_present = {func.lower() for func, col in s_exprs}
-        s_cols_present_in_exprs = {col.lower() for func, col in s_exprs}
+    # TODO: implement
+    def detect_66_expression_on_incorrect_clause(self) -> list[DetectedError]:
+        return []
 
-        for q_func, q_col in q_exprs:
-            q_func_lower = q_func.lower()
-            q_col_lower = q_col.lower()
-            
-            # An expression is a candidate for this error if it's not in the correct set
-            if (q_func_lower, q_col_lower) not in s_expr_set:
-                # Check if the function AND column exist separately in the correct solution,
-                # which strongly implies they were just paired incorrectly.
-                if q_func_lower in s_funcs_present and q_col_lower in s_cols_present_in_exprs:
-                    
-                    # Find what the column *should* have been for this function
-                    correct_col = "unknown"
-                    for s_f, s_c in s_exprs:
-                        if s_f.lower() == q_func_lower:
-                            correct_col = s_c
-                            break
-                    
-                    if correct_col != "unknown" and correct_col.lower() != q_col_lower:
-                        results.append((
-                            SqlErrors.LOG_67_EXPRESSION_ON_INCORRECT_COLUMN,
-                            f"The function '{q_func}' was applied to the wrong column. Expected {q_func}({correct_col}) but found {q_func}({q_col})."
-                        ))
-        return results
-
-    # TODO: refactor
-    def log_68_extraneous_expression(self) -> list[DetectedError]:
+    def detect_67_wildcards_without_like(self) -> list[DetectedError]:
         '''
-        Flags when an extraneous expression is included in the SELECT clause.
+            Detect = '%...%' instead of LIKE
+
+            If the correct query uses equality checks containing wildcards characters ('%' or '_'),
+            the user query is unlikely to be incorrect, so we do not flag it.
         '''
-        return []
-    
-        results = []
-        if not self.q_ast or not self.s_ast:
-            return results
 
-        # Re-use the helper that gets structured representations of expressions like ('AVG', 'Age').
-        q_exprs = self._get_structured_expressions(self.q_ast)
-        s_exprs = self._get_structured_expressions(self.s_ast)
+        results: list[DetectedError] = []
 
-        # Use sets for an efficient difference operation.
-        q_exprs_set = set(q_exprs)
-        s_exprs_set = set(s_exprs)
+        # First check the correct solutions
+        allow_underscore = False
+        allow_percent = False
 
-        # Find expressions that are in the user's query but NOT in the correct solution.
-        extraneous_expressions = q_exprs_set - s_exprs_set
+        for solution in self.solutions:
+            for select in solution.selects:
+                ast = select.ast
 
-        for func, col in extraneous_expressions:
-            # Format the expression into a user-friendly string.
-            expr_str = f"{func}({col})"
-            
-            results.append((
-                SqlErrors.LOG_4_EXPRESSION_ERROR_EXTRANEOUS_ERROR,
-                f"The expression '{expr_str}' is extraneous and should be removed from the SELECT clause."
-            ))
-            
+                if not ast:
+                    continue
+
+                for eq in ast.find_all(exp.EQ):
+                    left = eq.this
+                    right = eq.expression
+
+                    if isinstance(left, exp.Literal):
+                        if has_character(left, '_'):
+                            allow_underscore = True
+                        if has_character(left, '%'):
+                            allow_percent = True
+
+                    if isinstance(right, exp.Literal):
+                        if has_character(right, '_'):
+                            allow_underscore = True
+                        if has_character(right, '%'):
+                            allow_percent = True
+
+        for select in self.query.selects:
+            ast = select.ast
+
+            if not ast:
+                continue
+
+            for eq in ast.find_all(exp.EQ):
+                left = eq.this
+                right = eq.expression
+
+                if isinstance(left, exp.Literal):
+                    if not allow_underscore and has_character(left, '_'):
+                        results.append(DetectedError(SqlErrors.WILDCARDS_WITHOUT_LIKE, (str(eq),)))
+                        continue
+                    if not allow_percent and has_character(left, '%'):
+                        results.append(DetectedError(SqlErrors.WILDCARDS_WITHOUT_LIKE, (str(eq),)))
+                        continue
+
+                if isinstance(right, exp.Literal):
+                    if not allow_underscore and has_character(right, '_'):
+                        results.append(DetectedError(SqlErrors.WILDCARDS_WITHOUT_LIKE, (str(eq),)))
+                        continue
+                    if not allow_percent and has_character(right, '%'):
+                        results.append(DetectedError(SqlErrors.WILDCARDS_WITHOUT_LIKE, (str(eq),)))
+                        continue
+
         return results
 
-    # TODO: implement
-    def log_69_expression_on_incorrect_clause(self) -> list[DetectedError]:
-        return []
+    def detect_68_69_wrong_invalid_wildcard(self) -> list[DetectedError]:
+        '''
+            Detect misuse of wildcards, namely:
+            - '*' and '?'
+            - '_' instead of '%'
+            - '%' instead of '_'
 
-    def log_70_extraneous_column_in_select(self) -> list[DetectedError]:
+            If the correct solution uses the same character,
+            the user query is unlikely to be incorrect, so we do not flag it.
+        '''
+
+        results: list[DetectedError] = []
+
+        # First check the correct solutions
+        underscore_in_solution = False
+        percent_in_solution = False
+        star_in_solution = False
+        question_mark_in_solution = False
+
+        for solution in self.solutions:
+            for select in solution.selects:
+                ast = select.ast
+
+                if not ast:
+                    continue
+
+                for like in ast.find_all(exp.Like):
+                    pattern = like.expression
+                    if isinstance(pattern, exp.Literal):
+                        if has_character(pattern, '_'):
+                            underscore_in_solution = True
+                        if has_character(pattern, '%'):
+                            percent_in_solution = True
+                        if has_character(pattern, '*'):
+                            star_in_solution = True
+                        if has_character(pattern, '?'):
+                            question_mark_in_solution = True
+
+        # Then check the user query
+        for select in self.query.selects:
+            ast = select.ast
+
+            if not ast:
+                continue
+
+            for like in ast.find_all(exp.Like):
+                pattern = like.expression
+                if isinstance(pattern, exp.Literal):
+                    if not self.solutions:
+                        # No solutions to compare against
+                        # Fall back to detecting just '*' or '?' usage
+                        if has_character(pattern, '*') or has_character(pattern, '?'):
+                            results.append(DetectedError(SqlErrors.INVALID_WILDCARD, (str(like),)))
+                        continue
+
+                    # query contains '*' while solution does not
+                    # most likely an attempt to use '%' wildcard
+                    if not star_in_solution and has_character(pattern, '*'):
+                        results.append(DetectedError(SqlErrors.INVALID_WILDCARD, (str(like),)))
+
+                    # query contains '?' while solution does not
+                    # most likely an attempt to use '_' wildcard
+                    if not question_mark_in_solution and has_character(pattern, '?'):
+                        results.append(DetectedError(SqlErrors.INVALID_WILDCARD, (str(like),)))
+
+                    # '_' instead of '%'
+                    if percent_in_solution and not underscore_in_solution:
+                        if has_character(pattern, '_') and not has_character(pattern, '%'):
+                            results.append(DetectedError(SqlErrors.WRONG_WILDCARD, (str(like),)))
+
+                    # '%' instead of '_'
+                    if underscore_in_solution and not percent_in_solution:
+                        if has_character(pattern, '%') and not has_character(pattern, '_'):
+                            results.append(DetectedError(SqlErrors.WRONG_WILDCARD, (str(like),)))
+
+
+        
+        return results
+
+    def detect_70_extraneous_column_in_select(self) -> list[DetectedError]:
         '''
         Flags when an extraneous column is included in the SELECT clause.
         '''
@@ -375,7 +448,7 @@ class LogicalErrorDetector(BaseDetector):
         column_number_provided = len(self.query.main_query.output.columns)
 
         if column_number_provided > column_number_required_max:
-            results.append(DetectedError(SqlErrors.LOG_70_EXTRANEOUS_COLUMN_IN_SELECT, (column_number_provided, column_number_required_max)))
+            results.append(DetectedError(SqlErrors.EXTRANEOUS_COLUMN_IN_SELECT, (column_number_provided, column_number_required_max)))
 
         # Then, check for specific extraneous columns
         columns_required = set.union(*[sol.output_columns_source for sol in self.solutions])
@@ -383,11 +456,11 @@ class LogicalErrorDetector(BaseDetector):
         extraneous_columns = columns_provided - columns_required
 
         for schema, table, column in extraneous_columns:
-            results.append(DetectedError(SqlErrors.LOG_70_EXTRANEOUS_COLUMN_IN_SELECT, (schema, table, column)))
+            results.append(DetectedError(SqlErrors.EXTRANEOUS_COLUMN_IN_SELECT, (schema, table, column)))
 
         return results
     
-    def log_71_missing_column_from_select(self) -> list[DetectedError]:
+    def detect_71_missing_column_from_select(self) -> list[DetectedError]:
         '''
         Flags when a required column is missing from the SELECT clause.
         '''
@@ -399,7 +472,7 @@ class LogicalErrorDetector(BaseDetector):
         column_number_provided = len(self.query.main_query.output.columns)
 
         if column_number_provided < column_number_required_min:
-            results.append(DetectedError(SqlErrors.LOG_71_MISSING_COLUMN_FROM_SELECT, (column_number_provided, column_number_required_min)))
+            results.append(DetectedError(SqlErrors.MISSING_COLUMN_FROM_SELECT, (column_number_provided, column_number_required_min)))
 
         # Then, check for specific missing columns
         columns_required = set.union(*[sol.output_columns_source for sol in self.solutions])
@@ -407,11 +480,11 @@ class LogicalErrorDetector(BaseDetector):
         missing_columns = columns_required - columns_provided
 
         for schema, table, column in missing_columns:
-            results.append(DetectedError(SqlErrors.LOG_71_MISSING_COLUMN_FROM_SELECT, (schema, table, column)))
+            results.append(DetectedError(SqlErrors.MISSING_COLUMN_FROM_SELECT, (schema, table, column)))
 
         return results
     
-    def log_72_missing_distinct_from_select(self) -> list[DetectedError]:
+    def detect_72_missing_distinct_from_select(self) -> list[DetectedError]:
         '''Flags when DISTINCT is missing from a SELECT that requires it.'''
 
         def _is_distinct(so: SetOperation) -> bool:
@@ -430,11 +503,11 @@ class LogicalErrorDetector(BaseDetector):
             return []
         
         if not _is_distinct(self.query.main_query):
-            return [DetectedError(SqlErrors.LOG_72_MISSING_DISTINCT_FROM_SELECT)]
+            return [DetectedError(SqlErrors.MISSING_DISTINCT_FROM_SELECT)]
         
         return []
 
-    def log_73_missing_as_from_select(self) -> list[DetectedError]:
+    def detect_73_missing_as_from_select(self) -> list[DetectedError]:
         '''
             Flags when AS aliases are missing from required columns in the SELECT clause.
         '''
@@ -442,8 +515,8 @@ class LogicalErrorDetector(BaseDetector):
         results: list[DetectedError] = []
 
         # ensure we have the correct columns in both amount and source
-        extraneous_columns = self.log_70_extraneous_column_in_select()
-        missing_columns = self.log_71_missing_column_from_select()
+        extraneous_columns = self.detect_70_extraneous_column_in_select()
+        missing_columns = self.detect_71_missing_column_from_select()
 
         if extraneous_columns or missing_columns:
             return results  # skip AS check if column count is already wrong
@@ -455,13 +528,13 @@ class LogicalErrorDetector(BaseDetector):
         missing_aliases = expected_aliases - provided_aliases
 
         for alias in missing_aliases:
-            results.append(DetectedError(SqlErrors.LOG_73_MISSING_AS_FROM_SELECT, (alias,)))
+            results.append(DetectedError(SqlErrors.MISSING_AS_FROM_SELECT, (alias,)))
 
         return results
 
 
     # TODO: refactor
-    def log_74_missing_column_from_order_by(self) -> list[DetectedError]:
+    def detect_74_missing_column_from_order_by(self) -> list[DetectedError]:
         '''Flags when a required column is missing from the ORDER BY clause.'''
         return []
     
@@ -488,7 +561,7 @@ class LogicalErrorDetector(BaseDetector):
         return results
 
     # TODO: refactor
-    def log_75_incorrect_column_in_order_by(self) -> list[DetectedError]:
+    def detect_75_incorrect_column_in_order_by(self) -> list[DetectedError]:
         '''Flags when a column is incorrectly included in the ORDER BY clause.'''
         return []
     
@@ -514,69 +587,81 @@ class LogicalErrorDetector(BaseDetector):
             ))
         return results
 
-    # TODO: refactor
-    def log_76_extraneous_order_by_clause(self) -> list[DetectedError]:
-        '''Flags when an ORDER BY clause is present but not required.'''
-        return []
-    
-        results = []
-        if not self.q_ast or not self.s_ast:
-            return results
-
-        q_has_orderby = self.q_ast.get('args', {}).get('order_by') is not None
-        s_has_orderby = self.s_ast.get('args', {}).get('order_by') is not None
-
-        if q_has_orderby and not s_has_orderby:
-            results.append((
-                SqlErrors.LOG_76_EXTRANEOUS_ORDER_BY_CLAUSE,
-                "The ORDER BY clause is not required for this query."
-            ))
-        return results
-
-    # TODO: refactor
-    def log_77_incorrect_ordering_of_rows(self) -> list[DetectedError]:
-        '''Flags when a column in ORDER BY has the wrong sort direction (ASC/DESC).'''
-        return []
-    
-        results = []
-        if not self.q_ast or not self.s_ast:
-            return results
-
-        q_orderby_cols = self._get_orderby_columns(self.q_ast)
-        s_orderby_cols = self._get_orderby_columns(self.s_ast)
-
-        # Use dictionaries for easy lookup of a column's sort direction (case-insensitive keys)
-        q_order_map = {col.lower(): (col, direction) for col, direction in q_orderby_cols}
-        s_order_map = {col.lower(): (col, direction) for col, direction in s_orderby_cols}
-
-        print(f"q_order_map: {q_order_map}") if self.debug else None
-        print(f"s_order_map: {s_order_map}") if self.debug else None
-
-        # Check for columns that are present in both but have different directions
-        for col_lower, (q_col_orig, q_dir) in q_order_map.items():
-            if col_lower in s_order_map:
-                s_col_orig, s_dir = s_order_map[col_lower]
-                if q_dir != s_dir:
-                    results.append((
-                        SqlErrors.LOG_77_INCORRECT_ORDERING_OF_ROWS,
-                        f"Incorrect sort direction for column '{q_col_orig}'. Expected {s_dir} but found {q_dir}."
-                    ))
-        return results
-
     # TODO: implement
-    def log_78_distinct_as_function_parameter_when_not_applicable(self) -> list[DetectedError]:
-        return []
-
-    # TODO: implement
-    def log_79_missing_distinct_from_function_parameter(self) -> list[DetectedError]:
+    def detect_76_incorrect_ordering_of_rows(self) -> list[DetectedError]:
         return []
     
     # TODO: implement
-    def log_80_incorrect_function(self) -> list[DetectedError]:
+    def detect_77_missing_where_clause(self) -> list[DetectedError]:
         return []
     
     # TODO: implement
-    def log_81_incorrect_column_as_function_parameter(self) -> list[DetectedError]:
+    def detect_78_missing_group_by_clause(self) -> list[DetectedError]:
+        return []
+    
+    # TODO: implement
+    def detect_79_missing_having_clause(self) -> list[DetectedError]:
+        return []
+    
+    # TODO: implement
+    def detect_80_missing_order_by_clause(self) -> list[DetectedError]:
+        return []
+    
+    # TODO: implement
+    def detect_81_missing_limit_clause(self) -> list[DetectedError]:
+        return []
+
+    # TODO: implement
+    def detect_82_missing_offset_clause(self) -> list[DetectedError]:
+        return []
+
+    # TODO: implement
+    def detect_83_extraneous_where_clause(self) -> list[DetectedError]:
+        return []
+
+    # TODO: implement
+    def detect_84_extraneous_group_by_clause(self) -> list[DetectedError]:
+        return []
+
+    # TODO: implement
+    def detect_85_extraneous_having_clause(self) -> list[DetectedError]:
+        return []
+
+    # TODO: implement
+    def detect_86_extraneous_order_by_clause(self) -> list[DetectedError]:
+        return []
+
+    # TODO: implement
+    def detect_87_extraneous_limit_clause(self) -> list[DetectedError]:
+        return []
+
+    # TODO: implement
+    def detect_88_extraneous_offset_clause(self) -> list[DetectedError]:
+        return []
+
+    # TODO: implement
+    def detect_89_incorrect_limit(self) -> list[DetectedError]:
+        return []
+
+    # TODO: implement
+    def detect_90_incorrect_offset(self) -> list[DetectedError]:
+        return []
+
+    # TODO: implement
+    def detect_91_incorrect_function(self) -> list[DetectedError]:
+        return []
+
+
+    # TODO: implement
+    def detect_92_distinct_as_function_parameter_when_not_applicable(self) -> list[DetectedError]:
+        return []
+
+    # TODO: implement
+    def detect_93_missing_distinct_from_function_parameter(self) -> list[DetectedError]:
+        return []
+    
+    # TODO: implement
+    def detect_94_incorrect_column_as_function_parameter(self) -> list[DetectedError]:
         return []
     
     #region Utility methods
@@ -768,3 +853,17 @@ class LogicalErrorDetector(BaseDetector):
             
         return orderby_terms
     #endregion Utility methods
+
+# region Helper methods
+def has_character(literal: exp.Literal, chars: str) -> bool:
+    '''
+        Check if the literal contains a specific character.
+        If `chars` contains multiple characters, check if any of them are present.
+    '''
+    value = literal.this
+
+    if not isinstance(value, str):
+        return False
+
+    return any(c in value for c in chars)
+# endregion 

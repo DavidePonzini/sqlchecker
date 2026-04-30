@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "sql_error_categorizer"
-version = "0.2.4"
+version = "0.3.0"
 authors = [
   { name="Davide Ponzini", email="davide.ponzini95@gmail.com" },
 ]
@@ -22,7 +22,7 @@ dependencies = [
     "sqlparse",
     "sqlglot",
     "sqlscope>=1.0.15",
-    "sql_error_taxonomy",
+    "sql_error_taxonomy>=1.1.2",
     "z3-solver",
     "python-dateutil",
 ]

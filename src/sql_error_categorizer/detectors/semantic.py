@@ -1,13 +1,9 @@
 '''Detector for semantic errors in SQL queries.'''
 
-import difflib
 import re
-import sqlparse
-import sqlparse.keywords
 from typing import Callable
 from sqlglot import exp
-from z3 import Solver, Not, unsat, Or, And, BoolSort, is_expr
-import sqlglot
+from z3 import Not, Or, And
 from sql_error_taxonomy import SqlErrors
 from sqlscope import util
 from sqlscope.query import Query, smt
@@ -33,19 +29,15 @@ class SemanticErrorDetector(BaseDetector):
         results: list[DetectedError] = super().run()
 
         checks = [
-            self.sem_39_and_instead_of_or,
-            self.sem_40_tautological_or_inconsistent_expression,
-            self.sem_41_distinct_in_sum_or_avg,
-            self.sem_42_distinct_removing_important_duplicates,
-            self.sem_43_wildcards_without_like,
-            self.sem_44_incorrect_wildcard,
-            self.sem_45_mixing_comparison_and_null,
-            self.sem_46_null_in_in_subquery,
-            self.sem_47_join_on_incorrect_column,
-            self.sem_48_missing_join,
-            self.sem_49_duplicate_rows,
-            self.sem_50_constant_column_output,
-            self.sem_51_duplicate_column_output,
+            self.detect_38_tautological_or_inconsistent_expression,
+            self.detect_39_distinct_in_sum_or_avg,
+            self.detect_40_distinct_removing_important_duplicates,
+            self.detect_41_mixing_comparison_and_null,
+            self.detect_42_null_in_InAnyAll_subquery,
+            self.detect_43_join_condition_on_unmatchable_column,
+            self.detect_44_many_duplicates,
+            self.detect_45_constant_column_output,
+            self.detect_46_duplicate_column_output,
         ]
         
         for chk in checks:
@@ -53,11 +45,7 @@ class SemanticErrorDetector(BaseDetector):
 
         return results
 
-    def sem_39_and_instead_of_or(self) -> list[DetectedError]:
-        '''Detect AND used instead of OR in WHERE conditions, which produces an empty result set'''
-        return []
-
-    def sem_40_tautological_or_inconsistent_expression(self) -> list[DetectedError]:
+    def detect_38_tautological_or_inconsistent_expression(self) -> list[DetectedError]:
         results: list[DetectedError] = []
 
         for select in self.query.selects:
@@ -83,16 +71,16 @@ class SemanticErrorDetector(BaseDetector):
                 continue  # skip if cannot convert to z3
 
             if not smt.is_satisfiable(whole):
-                results.append(DetectedError(SqlErrors.SEM_40_TAUTOLOGICAL_OR_INCONSISTENT_EXPRESSION, ('contradiction',)))
+                results.append(DetectedError(SqlErrors.IMPLIED_TAUTOLOGICAL_OR_INCONSISTENT_EXPRESSION, ('contradiction',)))
             elif not smt.is_satisfiable(Not(whole)):
-                results.append(DetectedError(SqlErrors.SEM_40_TAUTOLOGICAL_OR_INCONSISTENT_EXPRESSION, ('tautology',)))
+                results.append(DetectedError(SqlErrors.IMPLIED_TAUTOLOGICAL_OR_INCONSISTENT_EXPRESSION, ('tautology',)))
                 
             # (2) each Ci redundant?
             for i, Ci in enumerate(dnf):
                     Ci_z3 = smt.sql_to_z3(Ci, variables)
                     others = Or(*[smt.sql_to_z3(C, variables) for j, C in enumerate(dnf) if j != i])
                     if not smt.is_satisfiable(And(Ci_z3, Not(others))):
-                        results.append(DetectedError(SqlErrors.SEM_40_TAUTOLOGICAL_OR_INCONSISTENT_EXPRESSION, ('redundant_disjunct', Ci.sql())))
+                        results.append(DetectedError(SqlErrors.IMPLIED_TAUTOLOGICAL_OR_INCONSISTENT_EXPRESSION, ('redundant_disjunct', Ci.sql())))
                     
                     # (3) each Ai,j redundant?
                     conjuncts = list(Ci.flatten())
@@ -105,11 +93,11 @@ class SemanticErrorDetector(BaseDetector):
                         others = Or(*[smt.sql_to_z3(C, variables) for k, C in enumerate(dnf) if k != i])
                         formula = And(Not(Aj_z3), *rest, Not(others))
                         if not smt.is_satisfiable(formula):
-                            results.append(DetectedError(SqlErrors.SEM_40_TAUTOLOGICAL_OR_INCONSISTENT_EXPRESSION, ('redundant_conjunct', (Ci.sql(), Aj.sql()))))
+                            results.append(DetectedError(SqlErrors.IMPLIED_TAUTOLOGICAL_OR_INCONSISTENT_EXPRESSION, ('redundant_conjunct', (Ci.sql(), Aj.sql()))))
 
         return results
 
-    def sem_41_distinct_in_sum_or_avg(self) -> list[DetectedError]:
+    def detect_39_distinct_in_sum_or_avg(self) -> list[DetectedError]:
         '''
             Detect SUM(DISTINCT ...) or AVG(DISTINCT ...)
 
@@ -150,167 +138,23 @@ class SemanticErrorDetector(BaseDetector):
                 # Solution does not use SUM(DISTINCT ...), so check user query
                 for func in ast.find_all(exp.Sum):
                     if func.this and isinstance(func.this, exp.Distinct):
-                        results.append(DetectedError(SqlErrors.SEM_41_DISTINCT_IN_SUM_OR_AVG, (func.sql(),)))
+                        results.append(DetectedError(SqlErrors.DISTINCT_IN_SUM_OR_AVG, (func.sql(),)))
 
             if not allow_avg_distinct:
                 # Solution does not use AVG(DISTINCT ...), so check user query
                 for func in ast.find_all(exp.Avg):
                     if func.this and isinstance(func.this, exp.Distinct):
-                        results.append(DetectedError(SqlErrors.SEM_41_DISTINCT_IN_SUM_OR_AVG, (func.sql(),)))
+                        results.append(DetectedError(SqlErrors.DISTINCT_IN_SUM_OR_AVG, (func.sql(),)))
 
         return results
     
     
     # TODO: implement
-    def sem_42_distinct_removing_important_duplicates(self) -> list[DetectedError]:
+    def detect_40_distinct_removing_important_duplicates(self) -> list[DetectedError]:
         return []
 
-    def sem_43_wildcards_without_like(self) -> list[DetectedError]:
-        '''
-            Detect = '%...%' instead of LIKE
-
-            If the correct query uses equality checks containing wildcards characters ('%' or '_'),
-            the user query is unlikely to be incorrect, so we do not flag it.
-        '''
-
-        results: list[DetectedError] = []
-
-        # First check the correct solutions
-        allow_underscore = False
-        allow_percent = False
-
-        for solution in self.solutions:
-            for select in solution.selects:
-                ast = select.ast
-
-                if not ast:
-                    continue
-
-                for eq in ast.find_all(exp.EQ):
-                    left = eq.this
-                    right = eq.expression
-
-                    if isinstance(left, exp.Literal):
-                        if has_character(left, '_'):
-                            allow_underscore = True
-                        if has_character(left, '%'):
-                            allow_percent = True
-
-                    if isinstance(right, exp.Literal):
-                        if has_character(right, '_'):
-                            allow_underscore = True
-                        if has_character(right, '%'):
-                            allow_percent = True
-
-        for select in self.query.selects:
-            ast = select.ast
-
-            if not ast:
-                continue
-
-            for eq in ast.find_all(exp.EQ):
-                left = eq.this
-                right = eq.expression
-
-                if isinstance(left, exp.Literal):
-                    if not allow_underscore and has_character(left, '_'):
-                        results.append(DetectedError(SqlErrors.SEM_43_WILDCARDS_WITHOUT_LIKE, (str(eq),)))
-                        continue
-                    if not allow_percent and has_character(left, '%'):
-                        results.append(DetectedError(SqlErrors.SEM_43_WILDCARDS_WITHOUT_LIKE, (str(eq),)))
-                        continue
-
-                if isinstance(right, exp.Literal):
-                    if not allow_underscore and has_character(right, '_'):
-                        results.append(DetectedError(SqlErrors.SEM_43_WILDCARDS_WITHOUT_LIKE, (str(eq),)))
-                        continue
-                    if not allow_percent and has_character(right, '%'):
-                        results.append(DetectedError(SqlErrors.SEM_43_WILDCARDS_WITHOUT_LIKE, (str(eq),)))
-                        continue
-
-        return results
-
-    def sem_44_incorrect_wildcard(self) -> list[DetectedError]:
-        '''
-            Detect misuse of wildcards, namely:
-            - '*' and '?'
-            - '_' instead of '%'
-            - '%' instead of '_'
-
-            If the correct solution uses the same character,
-            the user query is unlikely to be incorrect, so we do not flag it.
-        '''
-
-        results: list[DetectedError] = []
-
-        # First check the correct solutions
-        underscore_in_solution = False
-        percent_in_solution = False
-        star_in_solution = False
-        question_mark_in_solution = False
-
-        for solution in self.solutions:
-            for select in solution.selects:
-                ast = select.ast
-
-                if not ast:
-                    continue
-
-                for like in ast.find_all(exp.Like):
-                    pattern = like.expression
-                    if isinstance(pattern, exp.Literal):
-                        if has_character(pattern, '_'):
-                            underscore_in_solution = True
-                        if has_character(pattern, '%'):
-                            percent_in_solution = True
-                        if has_character(pattern, '*'):
-                            star_in_solution = True
-                        if has_character(pattern, '?'):
-                            question_mark_in_solution = True
-
-        # Then check the user query
-        for select in self.query.selects:
-            ast = select.ast
-
-            if not ast:
-                continue
-
-            for like in ast.find_all(exp.Like):
-                pattern = like.expression
-                if isinstance(pattern, exp.Literal):
-                    if not self.solutions:
-                        # No solutions to compare against
-                        # Fall back to detecting just '*' or '?' usage
-                        if has_character(pattern, '*') or has_character(pattern, '?'):
-                            results.append(DetectedError(SqlErrors.SEM_44_INCORRECT_WILDCARD, (str(like),)))
-                        continue
-
-                    # query contains '*' while solution does not
-                    # most likely an attempt to use '%' wildcard
-                    if not star_in_solution and has_character(pattern, '*'):
-                        results.append(DetectedError(SqlErrors.SEM_44_INCORRECT_WILDCARD, (str(like),)))
-
-                    # query contains '?' while solution does not
-                    # most likely an attempt to use '_' wildcard
-                    if not question_mark_in_solution and has_character(pattern, '?'):
-                        results.append(DetectedError(SqlErrors.SEM_44_INCORRECT_WILDCARD, (str(like),)))
-
-                    # '_' instead of '%'
-                    if percent_in_solution and not underscore_in_solution:
-                        if has_character(pattern, '_') and not has_character(pattern, '%'):
-                            results.append(DetectedError(SqlErrors.SEM_44_INCORRECT_WILDCARD, (str(like),)))
-
-                    # '%' instead of '_'
-                    if underscore_in_solution and not percent_in_solution:
-                        if has_character(pattern, '%') and not has_character(pattern, '_'):
-                            results.append(DetectedError(SqlErrors.SEM_44_INCORRECT_WILDCARD, (str(like),)))
-
-
-        
-        return results
-
     # TODO: refactor
-    def sem_45_mixing_comparison_and_null(self) -> list[DetectedError]: 
+    def detect_41_mixing_comparison_and_null(self) -> list[DetectedError]: 
         '''Detect mixing of >0 with IS NOT NULL or empty string with IS NULL on the same column'''
         return []
 
@@ -334,14 +178,14 @@ class SemanticErrorDetector(BaseDetector):
         return results    
     
     #TODO: implement
-    def sem_46_null_in_in_subquery(self) -> list[DetectedError]:
+    def detect_42_null_in_InAnyAll_subquery(self) -> list[DetectedError]:
         '''Detect potential NULL/UNKNOWN in IN/ANY/ALL subqueries when subquery column is nullable.
             heuristically assume that if a column is not declared as NOT NULL, then every typical 
             database state contains at least one row in which it is null. '''
         return []
 
     # TODO: implement
-    def sem_47_join_on_incorrect_column(self) -> list[DetectedError]:
+    def detect_43_join_condition_on_unmatchable_column(self) -> list[DetectedError]:
         '''
         For each JOIN … ON: require at least one “A.col = B.col” in the ON clause.
         For comma-style joins (FROM A, B): require at least one “A.col = B.col” in the WHERE.
@@ -350,17 +194,13 @@ class SemanticErrorDetector(BaseDetector):
         Check based on the content of the catalog column_metadata the compatibility of the columns.
         '''
         return []
-
-    # TODO: implement
-    def sem_48_missing_join(self) -> list[DetectedError]:
-        return []
     
     # TODO: implement
-    def sem_49_duplicate_rows(self) -> list[DetectedError]:
+    def detect_44_many_duplicates(self) -> list[DetectedError]:
         return []
     
     # TODO: refactor
-    def sem_50_constant_column_output(self) -> list[DetectedError]:
+    def detect_45_constant_column_output(self) -> list[DetectedError]:
         '''
         Detect when a SELECT-list column is constrained to a constant.
         - If WHERE has A = c and A is in SELECT, warn.
@@ -444,7 +284,7 @@ class SemanticErrorDetector(BaseDetector):
         return results
     
     # TODO: refactor
-    def sem_51_duplicate_column_output(self) -> list[DetectedError]:
+    def detect_46_duplicate_column_output(self) -> list[DetectedError]:
         '''
         Detects if the same column or expression appears multiple times in the SELECT list.
         '''
@@ -483,16 +323,4 @@ class SemanticErrorDetector(BaseDetector):
         return results
 
 
-# region Helper methods
-def has_character(literal: exp.Literal, chars: str) -> bool:
-    '''
-        Check if the literal contains a specific character.
-        If `chars` contains multiple characters, check if any of them are present.
-    '''
-    value = literal.this
 
-    if not isinstance(value, str):
-        return False
-
-    return any(c in value for c in chars)
-# endregion 
