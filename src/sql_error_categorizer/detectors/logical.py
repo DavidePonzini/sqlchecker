@@ -405,13 +405,6 @@ class LogicalErrorDetector(BaseDetector):
             for like in ast.find_all(exp.Like):
                 pattern = like.expression
                 if isinstance(pattern, exp.Literal):
-                    if not self.solutions:
-                        # No solutions to compare against
-                        # Fall back to detecting just '*' or '?' usage
-                        if has_character(pattern, '*') or has_character(pattern, '?'):
-                            results.append(DetectedError(SqlErrors.INVALID_WILDCARD, (str(like),)))
-                        continue
-
                     # query contains '*' while solution does not
                     # most likely an attempt to use '%' wildcard
                     if not star_in_solution and has_character(pattern, '*'):

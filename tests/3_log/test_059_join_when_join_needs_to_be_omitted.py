@@ -1,7 +1,7 @@
 from tests import *
 import pytest
 
-ERROR = SqlErrors.LOG_59_JOIN_WHEN_JOIN_NEEDS_TO_BE_OMITTED
+ERROR = SqlErrors.EXTRANEOUS_TABLE_REFERENCE
 
 @pytest.mark.parametrize('query, solutions, expected_errors, schema, search_path', [
     (
@@ -50,7 +50,7 @@ def test_wrong(query: str, solutions: list[str], expected_errors: list[tuple[str
 
     assert count_errors(detected_errors, ERROR) == len(expected_errors)
     for expected_error in expected_errors:
-        assert DetectedError(ERROR, expected_error) in detected_errors
+        assert has_error(detected_errors, ERROR, expected_error)
 
 @pytest.mark.parametrize('query, solutions, schema', [
     (

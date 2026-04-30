@@ -1,7 +1,7 @@
 from tests import *
 import pytest
 
-ERROR = SqlErrors.COM_92_UNNECESSARY_DISTINCT_IN_AGGREGATE_FUNCTION
+ERROR = SqlErrors.UNNECESSARY_DISTINCT_IN_AGGREGATE_FUNCTION
 
 @pytest.mark.parametrize('query,expected', [
     (
@@ -45,7 +45,7 @@ ERROR = SqlErrors.COM_92_UNNECESSARY_DISTINCT_IN_AGGREGATE_FUNCTION
         ['MAX(DISTINCT sid)']
     ),
 ])
-def test_unnecessary(query: str, expected: list[str]):
+def test_wrong(query: str, expected: list[str]):
     result = run_test(
         query,
         catalog_filename='miedema',
@@ -68,7 +68,7 @@ def test_unnecessary(query: str, expected: list[str]):
     'SELECT COUNT(DISTINCT street) FROM store',  # street is not unique
     'SELECT AVG(DISTINCT quantity) FROM shoppinglist',  # quantity is not unique
 ])
-def test_distinct_necessary(query: str):
+def test_correct(query: str):
     result = run_test(
         query,
         catalog_filename='miedema',

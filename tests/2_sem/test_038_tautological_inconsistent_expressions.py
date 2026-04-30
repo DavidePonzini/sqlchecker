@@ -1,7 +1,7 @@
 from tests import *
 import pytest
 
-ERROR = SqlErrors.SEM_40_TAUTOLOGICAL_OR_INCONSISTENT_EXPRESSION
+ERROR = SqlErrors.IMPLIED_TAUTOLOGICAL_OR_INCONSISTENT_EXPRESSION
 
 
 @pytest.mark.parametrize('query,expected_errors,dataset', [

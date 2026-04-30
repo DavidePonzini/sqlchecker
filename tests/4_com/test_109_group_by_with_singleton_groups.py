@@ -2,7 +2,7 @@ import pytest
 from tests import *
 from sqlscope.catalog import Constraint, ConstraintColumn
 
-ERROR = SqlErrors.COM_95_GROUP_BY_WITH_SINGLETON_GROUPS
+ERROR = SqlErrors.GROUP_BY_WITH_SINGLETON_GROUPS
 
 @pytest.mark.parametrize('query, group_by_constraint, singleton_constraint', [
     (
@@ -27,7 +27,7 @@ ERROR = SqlErrors.COM_95_GROUP_BY_WITH_SINGLETON_GROUPS
     )
 
 ])
-def test_singleton(query, group_by_constraint, singleton_constraint):
+def test_wrong(query, group_by_constraint, singleton_constraint):
     result = run_test(
         query,
         search_path='miedema',
@@ -43,7 +43,7 @@ def test_singleton(query, group_by_constraint, singleton_constraint):
     'SELECT cid, cname, COUNT(*) FROM customer, store GROUP BY cid, cname;',
     'SELECT cid, COUNT(*) FROM customer, store GROUP BY cid;',
 ])
-def test_necessary(query):
+def test_correct(query):
     result = run_test(
         query,
         search_path='miedema',

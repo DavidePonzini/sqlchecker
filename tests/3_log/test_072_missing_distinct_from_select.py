@@ -1,7 +1,7 @@
 from tests import *
 import pytest
 
-ERROR = SqlErrors.LOG_72_MISSING_DISTINCT_FROM_SELECT
+ERROR = SqlErrors.MISSING_DISTINCT_FROM_SELECT
 
 @pytest.mark.parametrize("query,solutions,schema", [
     (

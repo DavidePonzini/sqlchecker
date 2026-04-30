@@ -1,7 +1,7 @@
 from tests import *
 import pytest
 
-ERROR = SqlErrors.LOG_73_MISSING_AS_FROM_SELECT
+ERROR = SqlErrors.MISSING_AS_FROM_SELECT
 
 @pytest.mark.parametrize("query,solutions,schema,expected", [
     (

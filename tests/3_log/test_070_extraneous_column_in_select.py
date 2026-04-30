@@ -1,7 +1,7 @@
 from tests import *
 import pytest
 
-ERROR = SqlErrors.LOG_70_EXTRANEOUS_COLUMN_IN_SELECT
+ERROR = SqlErrors.EXTRANEOUS_COLUMN_IN_SELECT
 
 @pytest.mark.parametrize("query,solutions,schema,search_path,expected_len,expected_columns", [
     (

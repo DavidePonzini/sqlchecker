@@ -1,7 +1,7 @@
 import pytest
 from tests import *
 
-ERROR = SqlErrors.COM_97_GROUP_BY_CAN_BE_REPLACED_WITH_DISTINCT
+ERROR = SqlErrors.GROUP_BY_CAN_BE_REPLACED_WITH_DISTINCT
 
 @pytest.mark.parametrize('query, expected', [
     (
@@ -17,7 +17,7 @@ ERROR = SqlErrors.COM_97_GROUP_BY_CAN_BE_REPLACED_WITH_DISTINCT
         {('cid', 0), ('cname', 0)}
     ),
 ])
-def test_error(query, expected):
+def test_wrong(query, expected):
     result = run_test(
         query,
         search_path='miedema',

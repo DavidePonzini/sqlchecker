@@ -1,7 +1,7 @@
 from tests import *
 import pytest
 
-ERROR = SqlErrors.LOG_71_MISSING_COLUMN_FROM_SELECT
+ERROR = SqlErrors.MISSING_COLUMN_FROM_SELECT
 
 @pytest.mark.parametrize("query,solutions,schema,search_path,expected_len,expected_columns", [
     (
