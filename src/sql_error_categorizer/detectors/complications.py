@@ -32,31 +32,31 @@ class ComplicationDetector(BaseDetector):
         results: list[DetectedError] = super().run()
 
         checks = [
-            self.detect_82_unnecessary_complication,
-            self.detect_83_unnecessary_distinct_in_select_clause,
-            self.detect_84_unnecessary_table_reference,
-            self.detect_85_unused_correlation_name,
-            self.detect_86_tables_have_same_data,
-            self.detect_125_correlation_name_identical_to_table_name,
-            self.detect_87_unnecessary_general_comparison_operator,
-            self.detect_88_like_without_wildcards,
-            self.detect_89_unnecessarily_complicated_select_in_exists_subquery,
-            self.detect_90_in_exists_can_be_replaced_by_comparison,
-            self.detect_91_unnecessary_aggregate_function,
-            self.detect_92_unnecessary_distinct_in_aggregate_function,
-            self.detect_93_unnecessary_argument_of_count,
-            self.detect_94_unnecessary_group_by_in_exists_subquery,
-            self.detect_95_group_by_with_singleton_groups,
-            self.detect_96_group_by_with_only_a_single_group,
-            self.detect_97_group_by_can_be_replaced_by_distinct,
-            self.detect_98_union_can_be_replaced_by_or,
-            self.detect_99_unnecessary_column_in_order_by_clause,
-            self.detect_100_order_by_in_subquery,
-            self.detect_101_inefficient_having,
-            self.detect_102_inefficient_union,
-            self.detect_103_condition_in_the_subquery_can_be_moved_up,
-            self.detect_104_outer_join_can_be_replaced_by_inner_join,
-            self.detect_126_unused_cte,
+            self.detect_82_unnecessary_complication,                                # ok
+            self.detect_83_unnecessary_distinct_in_select_clause,                   # ok
+            self.detect_84_unnecessary_table_reference,                             # TODO: refactor/implement
+            self.detect_85_unused_correlation_name,                                 # TODO: implement
+            self.detect_86_tables_have_same_data,                                   # TODO: implement
+            self.detect_125_correlation_name_identical_to_table_name,               # TODO: implement
+            self.detect_87_unnecessary_general_comparison_operator,                 # TODO: implement
+            self.detect_88_like_without_wildcards,                                  # ok
+            self.detect_89_unnecessarily_complicated_select_in_exists_subquery,     # TODO: implement
+            self.detect_90_in_exists_can_be_replaced_by_comparison,                 # TODO: implement
+            self.detect_91_unnecessary_aggregate_function,                          # TODO: implement
+            self.detect_92_unnecessary_distinct_in_aggregate_function,              # ok
+            self.detect_93_unnecessary_argument_of_count,                           # ok
+            self.detect_94_unnecessary_group_by_in_exists_subquery,                 # TODO: implement
+            self.detect_95_group_by_with_singleton_groups,                          # ok
+            self.detect_96_group_by_with_only_a_single_group,                       # TODO: implement
+            self.detect_97_group_by_can_be_replaced_by_distinct,                    # ok
+            self.detect_98_union_can_be_replaced_by_or,                             # TODO: implement
+            self.detect_99_unnecessary_column_in_order_by_clause,                   # TODO: refactor/implement
+            self.detect_100_order_by_in_subquery,                                   # TODO: implement
+            self.detect_101_inefficient_having,                                     # TODO: implement
+            self.detect_102_inefficient_union,                                      # TODO: implement
+            self.detect_103_condition_in_the_subquery_can_be_moved_up,              # TODO: implement
+            self.detect_104_outer_join_can_be_replaced_by_inner_join,               # TODO: implement
+            self.detect_126_unused_cte,                                             #
         ]
         
         for chk in checks:
@@ -87,7 +87,6 @@ class ComplicationDetector(BaseDetector):
 
         return result
 
-    # TODO: refactor
     def detect_84_unnecessary_table_reference(self) -> list[DetectedError]:
         '''
         Flags a query that joins to a table not present in the correct solution.
@@ -118,19 +117,15 @@ class ComplicationDetector(BaseDetector):
             
         return results
     
-    # TODO: implement
     def detect_85_unused_correlation_name(self) -> list[DetectedError]:
         return []
     
-    # TODO: implement
     def detect_86_tables_have_same_data(self) -> list[DetectedError]:
         return []
 
-    # TODO: implement
     def detect_125_correlation_name_identical_to_table_name(self) -> list[DetectedError]:
         return []
     
-    # TODO: implement
     def detect_87_unnecessary_general_comparison_operator(self) -> list[DetectedError]:
         return []
     
@@ -167,15 +162,12 @@ class ComplicationDetector(BaseDetector):
 
         return results
     
-    # TODO: implement
     def detect_89_unnecessarily_complicated_select_in_exists_subquery(self) -> list[DetectedError]:
         return []
     
-    # TODO: implement
     def detect_90_in_exists_can_be_replaced_by_comparison(self) -> list[DetectedError]:
         return []
     
-    # TODO: implement
     def detect_91_unnecessary_aggregate_function(self) -> list[DetectedError]:
         return []
     
@@ -223,7 +215,6 @@ class ComplicationDetector(BaseDetector):
     def detect_93_unnecessary_argument_of_count(self) -> list[DetectedError]:
         return []
     
-    # TODO: implement
     def detect_94_unnecessary_group_by_in_exists_subquery(self) -> list[DetectedError]:
         return []
     
@@ -252,7 +243,6 @@ class ComplicationDetector(BaseDetector):
 
         return results
     
-    # TODO: implement
     def detect_96_group_by_with_only_a_single_group(self) -> list[DetectedError]:
         return []
     
@@ -300,13 +290,9 @@ class ComplicationDetector(BaseDetector):
 
         return results
                         
-
-    
-    # TODO: implement
     def detect_98_union_can_be_replaced_by_or(self) -> list[DetectedError]:
         return []
     
-    # TODO: refactor
     def detect_99_unnecessary_column_in_order_by_clause(self) -> list[DetectedError]:
         '''
         Flags when the ORDER BY clause contains unnecessary columns in addition
@@ -335,7 +321,6 @@ class ComplicationDetector(BaseDetector):
 
         return results
     
-    # TODO: implement
     def detect_100_order_by_in_subquery(self) -> list[DetectedError]:
         '''
         Flags when a subquery contains an ORDER BY clause.
@@ -358,19 +343,15 @@ class ComplicationDetector(BaseDetector):
 
         return results
     
-    # TODO: implement
     def detect_101_inefficient_having(self) -> list[DetectedError]:
         return []
     
-    # TODO: implement
     def detect_102_inefficient_union(self) -> list[DetectedError]:
         return []
     
-    # TODO: implement
     def detect_103_condition_in_the_subquery_can_be_moved_up(self) -> list[DetectedError]:
         return []
     
-    # TODO: implement
     def detect_104_outer_join_can_be_replaced_by_inner_join(self) -> list[DetectedError]:
         return []
 

@@ -47,12 +47,12 @@ class SyntaxErrorDetector(BaseDetector):
 
         # 2) detect unexisting objects (before corrections, to avoid false positives)
         unexisting_checks = [
-            self.detect_2_4_undefined_columns_ambiguous_columns,
-            self.detect_2_ambiguous_function,
-            self.detect_5_undefined_functions,
-            self.detect_6_undefined_function_parameters,
-            self.detect_7_8_undefined_tables,
-            self.detect_25_using_an_undefined_correlation_name,
+            self.detect_2_4_undefined_columns_ambiguous_columns,    # ok
+            self.detect_2_ambiguous_function,                       # TODO: implement
+            self.detect_5_undefined_functions,                      # ok
+            self.detect_6_undefined_function_parameters,            # ok
+            self.detect_7_8_undefined_tables,                       # ok
+            self.detect_25_using_an_undefined_correlation_name,     # TODO: implement
         ]
 
         for check in unexisting_checks:
@@ -62,13 +62,13 @@ class SyntaxErrorDetector(BaseDetector):
         # 3.1) detect fixable errors and apply corrections for improved subsequent checks
         # NOTE: leave in this order!
         misspelling_checks = [
-            self.detect_33_omitting_commas,
-            self.detect_27_confusing_table_names_with_column_names,
-            self.detect_36_nonstandard_operators,
-            self.detect_9_misspellings_schemas_tables,
-            self.detect_9_misspellings_columns,
-            self.detect_10_synonyms,
-            self.detect_11_omitted_quotes,
+            self.detect_33_omitting_commas,                         # TODO: implement/refactor
+            self.detect_27_confusing_table_names_with_column_names, # TODO: implement
+            self.detect_36_nonstandard_operators,                   # ok
+            self.detect_9_misspellings_schemas_tables,              # ok
+            self.detect_9_misspellings_columns,                     # ok
+            self.detect_10_synonyms,                                # TODO: implement
+            self.detect_11_omitted_quotes,                          # TODO: implement/refactor
         ]
 
         # 3.2) apply corrections and re-parse query
@@ -90,58 +90,31 @@ class SyntaxErrorDetector(BaseDetector):
             
         # Proceed with all other checks
         checks = [
-            self.detect_12_failure_to_specify_column_name_twice,
-            self.detect_13_data_type_mismatch,
-            self.detect_14_aggregate_function_outside_select_or_having,
-            self.detect_15_aggregate_functions_cannot_be_nested,
-            self.detect_16_extraneous_or_omitted_grouping_column,
-            self.detect_17_having_without_group_by,
-            self.detect_106_missing_quantifier,
-            self.detect_18_confusing_function_with_function_parameter,
-            self.detect_19_using_where_twice,
-            self.detect_20_omitted_from_clause,
-            self.detect_21_comparison_with_null,
-            self.detect_23_date_time_field_overflow,
-            self.detect_24_duplicate_clause,
-            self.detect_26_too_many_columns_in_subquery,
-            self.detect_30_confused_order_of_keywords,
-            self.detect_32_confused_syntax_of_keywords,
-            self.detect_107_108_curly_square_or_unmatched_brackets,
-            self.detect_35_is_where_not_applicable,
-            self.detect_36_nonstandard_keywords_or_standard_keywords_in_wrong_context,
-            self.detect_109_different_tuples_in_set_operation,
+            self.detect_12_failure_to_specify_column_name_twice,                        # TODO: implement
+            self.detect_13_data_type_mismatch,                                          # ok
+            self.detect_14_aggregate_function_outside_select_or_having,                 # ok
+            self.detect_15_aggregate_functions_cannot_be_nested,                        # ok
+            self.detect_16_extraneous_or_omitted_grouping_column,                       # ok
+            self.detect_17_having_without_group_by,                                     # ok
+            self.detect_106_missing_quantifier,                                         #TODO: implement
+            self.detect_18_confusing_function_with_function_parameter,                  # TODO: implement
+            self.detect_19_using_where_twice,                                           # ok
+            self.detect_20_omitted_from_clause,                                         # ok
+            self.detect_21_comparison_with_null,                                        # ok
+            self.detect_23_date_time_field_overflow,                                    # TODO: implement, needs AST
+            self.detect_24_duplicate_clause,                                            # ok
+            self.detect_26_too_many_columns_in_subquery,                                # ok
+            self.detect_30_confused_order_of_keywords,                                  # ok
+            self.detect_32_confused_syntax_of_keywords,                                 # TODO: check and refactor
+            self.detect_107_108_curly_square_or_unmatched_brackets,                     # ok
+            self.detect_35_is_where_not_applicable,                                     # ok
+            self.detect_36_nonstandard_keywords_or_standard_keywords_in_wrong_context,  #TODO: implement
+            self.detect_109_different_tuples_in_set_operation,                          #TODO: implement
         ]
     
         for check in checks:
             results.extend(check())
         return results
-
-    # region Utils
-    # TODO: remove
-    @staticmethod
-    def _are_types_compatible(type1: str, type2: str) -> bool:
-        '''
-            Checks if two data types are compatible for comparison.
-        '''
-
-        type1 = type1.lower()
-        type2 = type2.lower()
-
-        if type1 == type2:
-            return True
-
-        # Compatible string types
-        string_types = {'varchar', 'text', 'char', 'string'}
-        if type1 in string_types and type2 in string_types:
-            return True
-
-        # Compatible numeric types
-        numeric_types = {'int', 'integer', 'float', 'double', 'decimal', 'numeric', 'real'}
-        if type1 in numeric_types and type2 in numeric_types:
-            return True
-
-        return False
-    # endregion
 
     # region 1) Semicolons
     def detect_22_38_additional_omitted_semicolons(self) -> tuple[list[DetectedError], str]:
@@ -200,7 +173,6 @@ class SyntaxErrorDetector(BaseDetector):
     # endregion
 
     # region 2) Pre-fixing
-    # TODO: implement
     def detect_2_ambiguous_function(self) -> list[DetectedError]:
         return []
 
@@ -329,7 +301,6 @@ class SyntaxErrorDetector(BaseDetector):
 
         return results
     
-    # TODO: implement
     def detect_25_using_an_undefined_correlation_name(self) -> list[DetectedError]:
         return []
     # endregion
@@ -449,11 +420,9 @@ class SyntaxErrorDetector(BaseDetector):
 
         return [*results]
     
-    # TODO: implement
     def detect_10_synonyms(self) -> list[DetectedError]:
         return []
 
-    # TODO: refactor
     def detect_11_omitted_quotes(self) -> list[DetectedError]:
         '''
         Checks for potential omitting of quotes around character data in WHERE/HAVING clauses.
@@ -564,11 +533,9 @@ class SyntaxErrorDetector(BaseDetector):
             
         return results
     
-    # TODO: implement
     def detect_27_confusing_table_names_with_column_names(self) -> list[DetectedError]:
         return []
     
-    # TODO: refactor
     def detect_33_omitting_commas(self) -> list[DetectedError]:
         '''
         Flags queries where commas are likely missing between column expressions 
@@ -665,7 +632,6 @@ class SyntaxErrorDetector(BaseDetector):
     # endregion
 
     # region 4) Other checks
-    # TODO: implement
     def detect_12_failure_to_specify_column_name_twice(self) -> list[DetectedError]:
         return []
     
@@ -862,7 +828,6 @@ class SyntaxErrorDetector(BaseDetector):
 
         return results
     
-    #TODO: implement
     def detect_18_confusing_function_with_function_parameter(self) -> list[DetectedError]:
         return []
     
@@ -937,7 +902,6 @@ class SyntaxErrorDetector(BaseDetector):
 
         return results
 
-    # TODO: implement, needs AST
     def detect_23_date_time_field_overflow(self) -> list[DetectedError]:
         return []
 
@@ -1036,7 +1000,6 @@ class SyntaxErrorDetector(BaseDetector):
 
         return results
             
-    # TODO: check and refactor
     # NOTE: is this implementation actually coherent with the error description?
     def detect_32_confused_syntax_of_keywords(self) -> list[DetectedError]:
         '''
@@ -1126,7 +1089,6 @@ class SyntaxErrorDetector(BaseDetector):
             results.append(DetectedError(SqlErrors.CURLY_OR_SQUARE_BRACKETS, ('curly', curly_open, curly_close)))
 
         return results
-    
 
     def detect_35_is_where_not_applicable(self) -> list[DetectedError]:
         '''
@@ -1166,15 +1128,12 @@ class SyntaxErrorDetector(BaseDetector):
 
         return results
     
-    #TODO: implement
     def detect_36_nonstandard_keywords_or_standard_keywords_in_wrong_context(self) -> list[DetectedError]:
         return []
 
-    # TODO: implement
     def detect_109_different_tuples_in_set_operation(self) -> list[DetectedError]:
         return []
     
-    # TODO: implement
     def detect_106_missing_quantifier(self) -> list[DetectedError]:
         return []
     # endregion

@@ -29,15 +29,15 @@ class SemanticErrorDetector(BaseDetector):
         results: list[DetectedError] = super().run()
 
         checks = [
-            self.detect_40_tautological_or_inconsistent_expression,
-            self.detect_41_distinct_in_sum_or_avg,
-            self.detect_42_distinct_removing_important_duplicates,
-            self.detect_45_mixing_comparison_and_null,
-            self.detect_46_null_in_InAnyAll_subquery,
-            self.detect_47_join_condition_on_unmatchable_column,
-            self.detect_49_many_duplicates,
-            self.detect_50_constant_column_output,
-            self.detect_51_duplicate_column_output,
+            self.detect_40_tautological_or_inconsistent_expression,     # ok
+            self.detect_41_distinct_in_sum_or_avg,                      # ok
+            self.detect_42_distinct_removing_important_duplicates,      # TODO: implement
+            self.detect_45_mixing_comparison_and_null,                  # TODO: refactor/implement
+            self.detect_46_null_in_InAnyAll_subquery,                   # TODO: implement
+            self.detect_47_join_condition_on_unmatchable_column,        # TODO: implement
+            self.detect_49_many_duplicates,                             # TODO: implement
+            self.detect_50_constant_column_output,                      # TODO: revise and implement
+            self.detect_51_duplicate_column_output,                     # ok
         ]
         
         for chk in checks:
@@ -148,12 +148,9 @@ class SemanticErrorDetector(BaseDetector):
 
         return results
     
-    
-    # TODO: implement
     def detect_42_distinct_removing_important_duplicates(self) -> list[DetectedError]:
         return []
 
-    # TODO: refactor
     def detect_45_mixing_comparison_and_null(self) -> list[DetectedError]: 
         '''Detect mixing of >0 with IS NOT NULL or empty string with IS NULL on the same column'''
         return []
@@ -177,14 +174,12 @@ class SemanticErrorDetector(BaseDetector):
 
         return results    
     
-    #TODO: implement
     def detect_46_null_in_InAnyAll_subquery(self) -> list[DetectedError]:
         '''Detect potential NULL/UNKNOWN in IN/ANY/ALL subqueries when subquery column is nullable.
             heuristically assume that if a column is not declared as NOT NULL, then every typical 
             database state contains at least one row in which it is null. '''
         return []
 
-    # TODO: implement
     def detect_47_join_condition_on_unmatchable_column(self) -> list[DetectedError]:
         '''
         For each JOIN … ON: require at least one “A.col = B.col” in the ON clause.
@@ -195,11 +190,9 @@ class SemanticErrorDetector(BaseDetector):
         '''
         return []
     
-    # TODO: implement
     def detect_49_many_duplicates(self) -> list[DetectedError]:
         return []
     
-    # TODO: implement
     def detect_50_constant_column_output(self) -> list[DetectedError]:
         '''
             Detect if the output of the query contains a constant value.

@@ -32,43 +32,43 @@ class LogicalErrorDetector(BaseDetector):
         results: list[DetectedError] = super().run()
 
         checks = [
-            self.detect_39_and_instead_of_or,
-            self.detect_52_or_instead_of_and,
-            self.detect_53_extraneous_not_operator,
-            self.detect_54_missing_not_operator,
-            self.detect_55_substituted_existance_negation_with_less_more_than,
-            self.detect_57_incorrect_comparison_operator_or_value,
-            self.detect_58_59_62_table_reference_errors,
-            self.detect_60_join_condition_on_incorrect_column,
-            self.detect_61_join_condition_with_incorrect_comparison_operator,
-            self.detect_48_missing_join_condition,
-            self.detect_104_condition_on_outer_join,
-            self.detect_63_improper_nesting_of_expressions,
-            self.detect_64_improper_nesting_of_subqueries,
-            self.detect_65_extraneous_quotes,
-            self.detect_66_missing_expression,
-            self.detect_68_extraneous_expression,
-            self.detect_67_expression_on_incorrect_column,
-            self.detect_69_expression_on_incorrect_clause,
-            self.detect_43_wildcards_without_like,
-            self.detect_110_111_wrong_invalid_wildcard,
-            self.detect_70_extraneous_column_in_select,
-            self.detect_71_missing_column_from_select,
-            self.detect_72_missing_distinct_from_select,
-            self.detect_73_missing_as_from_select,
-            self.detect_74_missing_column_from_order_by,
-            self.detect_75_incorrect_column_in_order_by,
-            self.detect_77_incorrect_ordering_of_rows,
-            self.detect_112_118_missing_extraneous_where_clause,
-            self.detect_113_119_missing_extraneous_group_by_clause,
-            self.detect_114_120_missing_extraneous_having_clause,
-            self.detect_115_121_missing_extraneous_order_by_clause,
-            self.detect_116_121_123_missing_extraneous_incorrect_limit_clause,
-            self.detect_117_122_missing_extraneous_incorrect_offset_clause,
-            self.detect_80_incorrect_function,
-            self.detect_78_distinct_as_function_parameter_when_not_applicable,
-            self.detect_79_missing_distinct_from_function_parameter,
-            self.detect_81_incorrect_column_as_function_parameter,
+            self.detect_39_and_instead_of_or,                                       # TODO: implement
+            self.detect_52_or_instead_of_and,                                       # TODO: refactor/implement
+            self.detect_53_extraneous_not_operator,                                 # TODO: implement
+            self.detect_54_missing_not_operator,                                    # TODO: implement
+            self.detect_55_substituted_existance_negation_with_less_more_than,      # TODO: implement
+            self.detect_57_incorrect_comparison_operator_or_value,                  # TODO: refactor/implement
+            self.detect_58_59_62_table_reference_errors,                            # ok
+            self.detect_60_join_condition_on_incorrect_column,                      # ok
+            self.detect_61_join_condition_with_incorrect_comparison_operator,       # ok
+            self.detect_48_missing_join_condition,                                  # ok
+            self.detect_104_condition_on_outer_join,                                # ok
+            self.detect_63_improper_nesting_of_expressions,                         # TODO: implement
+            self.detect_64_improper_nesting_of_subqueries,                          # TODO: implement
+            self.detect_65_extraneous_quotes,                                       # TODO: implement
+            self.detect_66_missing_expression,                                      # TODO: implement
+            self.detect_68_extraneous_expression,                                   # TODO: implement
+            self.detect_67_expression_on_incorrect_column,                          # TODO: implement
+            self.detect_69_expression_on_incorrect_clause,                          # TODO: implement
+            self.detect_43_wildcards_without_like,                                  # ok
+            self.detect_110_111_wrong_invalid_wildcard,                             # ok
+            self.detect_70_extraneous_column_in_select,                             # ok
+            self.detect_71_missing_column_from_select,                              # ok
+            self.detect_72_missing_distinct_from_select,                            # ok
+            self.detect_73_missing_as_from_select,                                  # ok
+            self.detect_74_missing_column_from_order_by,                            # TODO: refactor/implement
+            self.detect_75_incorrect_column_in_order_by,                            # TODO: refactor/implement
+            self.detect_77_incorrect_ordering_of_rows,                              # TODO: implement
+            self.detect_112_118_missing_extraneous_where_clause,                    # ok
+            self.detect_113_119_missing_extraneous_group_by_clause,                 # ok
+            self.detect_114_120_missing_extraneous_having_clause,                   # ok
+            self.detect_115_121_missing_extraneous_order_by_clause,                 # ok
+            self.detect_116_121_123_missing_extraneous_incorrect_limit_clause,      # ok
+            self.detect_117_122_missing_extraneous_incorrect_offset_clause,         # ok
+            self.detect_80_incorrect_function,                                      # TODO: implement
+            self.detect_78_distinct_as_function_parameter_when_not_applicable,      # TODO: implement
+            self.detect_79_missing_distinct_from_function_parameter,                # TODO: implement
+            self.detect_81_incorrect_column_as_function_parameter,                  # TODO: implement
         ]
 
         for chk in checks:
@@ -76,11 +76,10 @@ class LogicalErrorDetector(BaseDetector):
 
         return results
         
-    # TODO: implement
+    
     def detect_39_and_instead_of_or(self) -> list[DetectedError]:
         return []
 
-    # TODO: refactor
     def detect_52_or_instead_of_and(self) -> list[DetectedError]:
         '''
         Detects if OR is used instead of AND in the WHERE or HAVING clauses
@@ -113,19 +112,15 @@ class LogicalErrorDetector(BaseDetector):
                 
         return results
     
-    # TODO: implement
     def detect_53_extraneous_not_operator(self) -> list[DetectedError]:
         return []
     
-    # TODO: implement
     def detect_54_missing_not_operator(self) -> list[DetectedError]:
         return []
     
-    # TODO: implement
     def detect_55_substituted_existance_negation_with_less_more_than(self) -> list[DetectedError]:
         return []
     
-    # TODO: refactor
     def detect_57_incorrect_comparison_operator_or_value(self) -> list[DetectedError]:
         '''
         Flags errors in comparison operators or values in WHERE and HAVING clauses.
@@ -239,48 +234,36 @@ class LogicalErrorDetector(BaseDetector):
 
         return results
 
-    
-    # TODO: implement
     def detect_60_join_condition_on_incorrect_column(self) -> list[DetectedError]:
         return []
     
-    # TODO: implement
     def detect_61_join_condition_with_incorrect_comparison_operator(self) -> list[DetectedError]:
         return []
     
-    # TODO: implement
     def detect_48_missing_join_condition(self) -> list[DetectedError]:
         return []
     
-    # TODO: implement
     def detect_104_condition_on_outer_join(self) -> list[DetectedError]:
         return []
 
-    # TODO: implement
     def detect_63_improper_nesting_of_expressions(self) -> list[DetectedError]:
         return []
     
-    # TODO: implement
     def detect_64_improper_nesting_of_subqueries(self) -> list[DetectedError]:
         return []
     
-    # TODO: implement
     def detect_65_extraneous_quotes(self) -> list[DetectedError]:
         return []
 
-    # TODO: implement
     def detect_66_missing_expression(self) -> list[DetectedError]:
         return []
 
-    # TODO: implement
     def detect_68_extraneous_expression(self) -> list[DetectedError]:
         return []
     
-    # TODO: implement
     def detect_67_expression_on_incorrect_column(self) -> list[DetectedError]:
         return []
 
-    # TODO: implement
     def detect_69_expression_on_incorrect_clause(self) -> list[DetectedError]:
         return []
 
@@ -517,8 +500,6 @@ class LogicalErrorDetector(BaseDetector):
 
         return results
 
-
-    # TODO: refactor
     def detect_74_missing_column_from_order_by(self) -> list[DetectedError]:
         '''Flags when a required column is missing from the ORDER BY clause.'''
         results: list[DetectedError] = []
@@ -555,7 +536,6 @@ class LogicalErrorDetector(BaseDetector):
             ))
         return results
 
-    # TODO: refactor
     def detect_75_incorrect_column_in_order_by(self) -> list[DetectedError]:
         '''Flags when a column is incorrectly included in the ORDER BY clause.'''
         return []
@@ -582,7 +562,6 @@ class LogicalErrorDetector(BaseDetector):
             ))
         return results
 
-    # TODO: implement
     def detect_77_incorrect_ordering_of_rows(self) -> list[DetectedError]:
         return []
     
@@ -726,19 +705,15 @@ class LogicalErrorDetector(BaseDetector):
 
         return results
 
-    # TODO: implement
     def detect_80_incorrect_function(self) -> list[DetectedError]:
         return []
 
-    # TODO: implement
     def detect_78_distinct_as_function_parameter_when_not_applicable(self) -> list[DetectedError]:
         return []
 
-    # TODO: implement
     def detect_79_missing_distinct_from_function_parameter(self) -> list[DetectedError]:
         return []
     
-    # TODO: implement
     def detect_81_incorrect_column_as_function_parameter(self) -> list[DetectedError]:
         return []
     
