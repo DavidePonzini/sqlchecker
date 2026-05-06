@@ -374,7 +374,6 @@ class ComplicationDetector(BaseDetector):
     def detect_104_outer_join_can_be_replaced_by_inner_join(self) -> list[DetectedError]:
         return []
 
-    # TODO: add tests
     def detect_126_unused_cte(self) -> list[DetectedError]:
         results: list[DetectedError] = []
 

@@ -21,7 +21,6 @@ def test_wrong(query, errors):
     for error in errors:
         assert has_error(result, ERROR, error)
 
-@pytest.mark.xfail(reason='Not implemented yet')
 @pytest.mark.parametrize('query', [
     'SELECT a FROM orders;',
     'SELECT a, b FROM orders WHERE a = b;',
