@@ -32,51 +32,43 @@ class LogicalErrorDetector(BaseDetector):
         results: list[DetectedError] = super().run()
 
         checks = [
-            self.detect_47_and_instead_of_or,
-            self.detect_48_or_instead_of_and,
-            self.detect_49_extraneous_not_operator,
-            self.detect_50_missing_not_operator,
-            self.detect_51_substituted_existance_negation_with_less_more_than,
-            self.detect_52_incorrect_comparison_operator_or_value,
-            self.detect_53_54_55_table_reference_errors,
-            self.detect_56_join_condition_on_incorrect_column,
-            self.detect_57_join_condition_with_incorrect_comparison_operator,
-            self.detect_58_omitted_join_condition,
-            self.detect_59_condition_on_outer_join,
-            self.detect_60_improper_nesting_of_expressions,
-            self.detect_61_improper_nesting_of_subqueries,
-            self.detect_62_extraneous_quotes,
-            self.detect_63_missing_expression,
-            self.detect_64_extraneous_expression,
-            self.detect_65_expression_on_incorrect_column,
-            self.detect_66_expression_on_incorrect_clause,
-            self.detect_67_wildcards_without_like,
-            self.detect_68_69_wrong_invalid_wildcard,
+            self.detect_39_and_instead_of_or,
+            self.detect_52_or_instead_of_and,
+            self.detect_53_extraneous_not_operator,
+            self.detect_54_missing_not_operator,
+            self.detect_55_substituted_existance_negation_with_less_more_than,
+            self.detect_57_incorrect_comparison_operator_or_value,
+            self.detect_58_59_62_table_reference_errors,
+            self.detect_60_join_condition_on_incorrect_column,
+            self.detect_61_join_condition_with_incorrect_comparison_operator,
+            self.detect_48_missing_join_condition,
+            self.detect_104_condition_on_outer_join,
+            self.detect_63_improper_nesting_of_expressions,
+            self.detect_64_improper_nesting_of_subqueries,
+            self.detect_65_extraneous_quotes,
+            self.detect_66_missing_expression,
+            self.detect_68_extraneous_expression,
+            self.detect_67_expression_on_incorrect_column,
+            self.detect_69_expression_on_incorrect_clause,
+            self.detect_43_wildcards_without_like,
+            self.detect_110_111_wrong_invalid_wildcard,
             self.detect_70_extraneous_column_in_select,
             self.detect_71_missing_column_from_select,
             self.detect_72_missing_distinct_from_select,
             self.detect_73_missing_as_from_select,
             self.detect_74_missing_column_from_order_by,
             self.detect_75_incorrect_column_in_order_by,
-            self.detect_76_incorrect_ordering_of_rows,
-            self.detect_77_missing_where_clause,
-            self.detect_78_missing_group_by_clause,
-            self.detect_79_missing_having_clause,
-            self.detect_80_missing_order_by_clause,
-            self.detect_81_missing_limit_clause,
-            self.detect_82_missing_offset_clause,
-            self.detect_83_extraneous_where_clause,
-            self.detect_84_extraneous_group_by_clause,
-            self.detect_85_extraneous_having_clause,
-            self.detect_86_extraneous_order_by_clause,
-            self.detect_87_extraneous_limit_clause,
-            self.detect_88_extraneous_offset_clause,
-            self.detect_89_incorrect_limit,
-            self.detect_90_incorrect_offset,
-            self.detect_91_incorrect_function,
-            self.detect_92_distinct_as_function_parameter_when_not_applicable,
-            self.detect_93_missing_distinct_from_function_parameter,
-            self.detect_94_incorrect_column_as_function_parameter,
+            self.detect_77_incorrect_ordering_of_rows,
+            self.detect_112_118_missing_extraneous_where_clause,
+            self.detect_113_119_missing_extraneous_group_by_clause,
+            self.detect_114_120_missing_extraneous_having_clause,
+            self.detect_115_121_missing_extraneous_order_by_clause,
+            self.detect_116_121_123_missing_extraneous_incorrect_limit_clause,
+            self.detect_117_122_missing_extraneous_incorrect_offset_clause,
+            self.detect_80_incorrect_function,
+            self.detect_78_distinct_as_function_parameter_when_not_applicable,
+            self.detect_79_missing_distinct_from_function_parameter,
+            self.detect_81_incorrect_column_as_function_parameter,
         ]
 
         for chk in checks:
@@ -85,11 +77,11 @@ class LogicalErrorDetector(BaseDetector):
         return results
         
     # TODO: implement
-    def detect_47_and_instead_of_or(self) -> list[DetectedError]:
+    def detect_39_and_instead_of_or(self) -> list[DetectedError]:
         return []
 
     # TODO: refactor
-    def detect_48_or_instead_of_and(self) -> list[DetectedError]:
+    def detect_52_or_instead_of_and(self) -> list[DetectedError]:
         '''
         Detects if OR is used instead of AND in the WHERE or HAVING clauses
         by comparing the query's AST against the correct solution's AST.
@@ -122,19 +114,19 @@ class LogicalErrorDetector(BaseDetector):
         return results
     
     # TODO: implement
-    def detect_49_extraneous_not_operator(self) -> list[DetectedError]:
+    def detect_53_extraneous_not_operator(self) -> list[DetectedError]:
         return []
     
     # TODO: implement
-    def detect_50_missing_not_operator(self) -> list[DetectedError]:
+    def detect_54_missing_not_operator(self) -> list[DetectedError]:
         return []
     
     # TODO: implement
-    def detect_51_substituted_existance_negation_with_less_more_than(self) -> list[DetectedError]:
+    def detect_55_substituted_existance_negation_with_less_more_than(self) -> list[DetectedError]:
         return []
     
     # TODO: refactor
-    def detect_52_incorrect_comparison_operator_or_value(self) -> list[DetectedError]:
+    def detect_57_incorrect_comparison_operator_or_value(self) -> list[DetectedError]:
         '''
         Flags errors in comparison operators or values in WHERE and HAVING clauses.
         
@@ -189,7 +181,7 @@ class LogicalErrorDetector(BaseDetector):
                     ))
         return results
     
-    def detect_53_54_55_table_reference_errors(self) -> list[DetectedError]:
+    def detect_58_59_62_table_reference_errors(self) -> list[DetectedError]:
         '''
             Detects join-related errors by comparing the tables used in the proposed query
             against those in the correct solutions.
@@ -249,50 +241,50 @@ class LogicalErrorDetector(BaseDetector):
 
     
     # TODO: implement
-    def detect_56_join_condition_on_incorrect_column(self) -> list[DetectedError]:
+    def detect_60_join_condition_on_incorrect_column(self) -> list[DetectedError]:
         return []
     
     # TODO: implement
-    def detect_57_join_condition_with_incorrect_comparison_operator(self) -> list[DetectedError]:
+    def detect_61_join_condition_with_incorrect_comparison_operator(self) -> list[DetectedError]:
         return []
     
     # TODO: implement
-    def detect_58_omitted_join_condition(self) -> list[DetectedError]:
+    def detect_48_missing_join_condition(self) -> list[DetectedError]:
         return []
     
     # TODO: implement
-    def detect_59_condition_on_outer_join(self) -> list[DetectedError]:
+    def detect_104_condition_on_outer_join(self) -> list[DetectedError]:
         return []
 
     # TODO: implement
-    def detect_60_improper_nesting_of_expressions(self) -> list[DetectedError]:
+    def detect_63_improper_nesting_of_expressions(self) -> list[DetectedError]:
         return []
     
     # TODO: implement
-    def detect_61_improper_nesting_of_subqueries(self) -> list[DetectedError]:
+    def detect_64_improper_nesting_of_subqueries(self) -> list[DetectedError]:
         return []
     
     # TODO: implement
-    def detect_62_extraneous_quotes(self) -> list[DetectedError]:
+    def detect_65_extraneous_quotes(self) -> list[DetectedError]:
         return []
 
     # TODO: implement
-    def detect_63_missing_expression(self) -> list[DetectedError]:
+    def detect_66_missing_expression(self) -> list[DetectedError]:
         return []
 
     # TODO: implement
-    def detect_64_extraneous_expression(self) -> list[DetectedError]:
+    def detect_68_extraneous_expression(self) -> list[DetectedError]:
         return []
     
     # TODO: implement
-    def detect_65_expression_on_incorrect_column(self) -> list[DetectedError]:
+    def detect_67_expression_on_incorrect_column(self) -> list[DetectedError]:
         return []
 
     # TODO: implement
-    def detect_66_expression_on_incorrect_clause(self) -> list[DetectedError]:
+    def detect_69_expression_on_incorrect_clause(self) -> list[DetectedError]:
         return []
 
-    def detect_67_wildcards_without_like(self) -> list[DetectedError]:
+    def detect_43_wildcards_without_like(self) -> list[DetectedError]:
         '''
             Detect = '%...%' instead of LIKE
 
@@ -357,7 +349,7 @@ class LogicalErrorDetector(BaseDetector):
 
         return results
 
-    def detect_68_69_wrong_invalid_wildcard(self) -> list[DetectedError]:
+    def detect_110_111_wrong_invalid_wildcard(self) -> list[DetectedError]:
         '''
             Detect misuse of wildcards, namely:
             - '*' and '?'
@@ -529,7 +521,17 @@ class LogicalErrorDetector(BaseDetector):
     # TODO: refactor
     def detect_74_missing_column_from_order_by(self) -> list[DetectedError]:
         '''Flags when a required column is missing from the ORDER BY clause.'''
-        return []
+        results: list[DetectedError] = []
+
+        # for select in self.query.main_query.main_selects:
+        #     if not select.order_by:
+        #         continue
+
+        #     order_by_cols: list[] = []
+
+        #     # 1. Extract columns from the query's ORDER BY clause and map them to referenced tables
+
+        return results
     
         results = []
         if not self.q_ast or not self.s_ast:
@@ -581,272 +583,161 @@ class LogicalErrorDetector(BaseDetector):
         return results
 
     # TODO: implement
-    def detect_76_incorrect_ordering_of_rows(self) -> list[DetectedError]:
+    def detect_77_incorrect_ordering_of_rows(self) -> list[DetectedError]:
         return []
     
-    # TODO: implement
-    def detect_77_missing_where_clause(self) -> list[DetectedError]:
-        return []
+    # TODO: add tests
+    def detect_112_118_missing_extraneous_where_clause(self) -> list[DetectedError]:
+        results: list[DetectedError] = []
+
+        # If any solution has a WHERE clause, then the user's query should have one as well
+        solution_has_where = False
+        for solution in self.solutions:
+            if any(select.where for select in solution.selects):
+                solution_has_where = True
+                break
+
+        user_has_where = any(select.where for select in self.query.selects)
+
+        if solution_has_where and not user_has_where:
+            results.append(DetectedError(SqlErrors.MISSING_WHERE_CLAUSE))
+        elif not solution_has_where and user_has_where:
+            results.append(DetectedError(SqlErrors.EXTRANEOUS_WHERE_CLAUSE))
+
+        return results
     
-    # TODO: implement
-    def detect_78_missing_group_by_clause(self) -> list[DetectedError]:
-        return []
+    # TODO: add tests
+    def detect_113_119_missing_extraneous_group_by_clause(self) -> list[DetectedError]:
+        results: list[DetectedError] = []
+
+        # If any solution has a GROUP BY clause, then the user's query should have one as well
+        solution_has_group_by = False
+        for solution in self.solutions:
+            if any(select.group_by for select in solution.selects):
+                solution_has_group_by = True
+                break
+
+        user_has_group_by = any(select.group_by for select in self.query.selects)
+
+        if solution_has_group_by and not user_has_group_by:
+            results.append(DetectedError(SqlErrors.MISSING_GROUP_BY_CLAUSE))
+        elif not solution_has_group_by and user_has_group_by:
+            results.append(DetectedError(SqlErrors.EXTRANEOUS_GROUP_BY_CLAUSE))
     
-    # TODO: implement
-    def detect_79_missing_having_clause(self) -> list[DetectedError]:
-        return []
+        return results
     
-    # TODO: implement
-    def detect_80_missing_order_by_clause(self) -> list[DetectedError]:
-        return []
-    
-    # TODO: implement
-    def detect_81_missing_limit_clause(self) -> list[DetectedError]:
-        return []
+    # TODO: add tests
+    def detect_114_120_missing_extraneous_having_clause(self) -> list[DetectedError]:
+        results: list[DetectedError] = []
 
-    # TODO: implement
-    def detect_82_missing_offset_clause(self) -> list[DetectedError]:
-        return []
+        # If any solution has a HAVING clause, then the user's query should have one as well
+        solution_has_having = False
+        for solution in self.solutions:
+            if any(select.having for select in solution.selects):
+                solution_has_having = True
+                break
 
-    # TODO: implement
-    def detect_83_extraneous_where_clause(self) -> list[DetectedError]:
-        return []
+        user_has_having = any(select.having for select in self.query.selects)
 
-    # TODO: implement
-    def detect_84_extraneous_group_by_clause(self) -> list[DetectedError]:
-        return []
+        if solution_has_having and not user_has_having:
+            results.append(DetectedError(SqlErrors.MISSING_HAVING_CLAUSE))
+        elif not solution_has_having and user_has_having:
+            results.append(DetectedError(SqlErrors.EXTRANEOUS_HAVING_CLAUSE))
 
-    # TODO: implement
-    def detect_85_extraneous_having_clause(self) -> list[DetectedError]:
-        return []
+        return results
 
-    # TODO: implement
-    def detect_86_extraneous_order_by_clause(self) -> list[DetectedError]:
-        return []
+    # TODO: add tests
+    def detect_115_121_missing_extraneous_order_by_clause(self) -> list[DetectedError]:
+        results: list[DetectedError] = []
 
-    # TODO: implement
-    def detect_87_extraneous_limit_clause(self) -> list[DetectedError]:
-        return []
+        # If any solution has an ORDER BY clause, then the user's query should have one as well
+        solution_has_order_by = False
+        for solution in self.solutions:
+            if any(select.order_by for select in solution.selects):
+                solution_has_order_by = True
+                break
 
-    # TODO: implement
-    def detect_88_extraneous_offset_clause(self) -> list[DetectedError]:
-        return []
+        user_has_order_by = any(select.order_by for select in self.query.selects)
 
-    # TODO: implement
-    def detect_89_incorrect_limit(self) -> list[DetectedError]:
-        return []
+        if solution_has_order_by and not user_has_order_by:
+            results.append(DetectedError(SqlErrors.MISSING_ORDER_BY_CLAUSE))
+        elif not solution_has_order_by and user_has_order_by:
+            results.append(DetectedError(SqlErrors.EXTRANEOUS_ORDER_BY_CLAUSE))
 
-    # TODO: implement
-    def detect_90_incorrect_offset(self) -> list[DetectedError]:
-        return []
+        return results
 
-    # TODO: implement
-    def detect_91_incorrect_function(self) -> list[DetectedError]:
-        return []
+    # TODO: add tests
+    def detect_116_121_123_missing_extraneous_incorrect_limit_clause(self) -> list[DetectedError]:
+        results: list[DetectedError] = []
 
-
-    # TODO: implement
-    def detect_92_distinct_as_function_parameter_when_not_applicable(self) -> list[DetectedError]:
-        return []
-
-    # TODO: implement
-    def detect_93_missing_distinct_from_function_parameter(self) -> list[DetectedError]:
-        return []
-    
-    # TODO: implement
-    def detect_94_incorrect_column_as_function_parameter(self) -> list[DetectedError]:
-        return []
-    
-    #region Utility methods
-    def _get_comparisons(self, node: dict) -> list:
-        '''
-        Recursively traverses an AST node to find all comparison expressions.
+        # Save all possible limit values from solutions to handle cases where multiple solutions have different limits,
+        #  as well as set operations, which would be too complex to map to their limit values directly
+        solution_limits: set[int] = set()
         
-        Args:
-            node: The AST node to start traversal from.
-            
-        Returns:
-            A list of tuples, where each tuple represents a comparison in the
-            form (column_name, operator_class, literal_value).
-        '''
-        if not node or not isinstance(node, dict):
-            return []
+        # If any solution has a LIMIT clause, then the user's query should have one as well
+        for solution in self.solutions:
+            # Only check main selects for LIMIT clause, since LIMIT on subqueries is less common and often not required
+            for select in solution.main_query.main_selects:
+                if select.limit is not None:
+                    solution_limits.add(select.limit)
 
-        node_class = node.get('class')
-        args = node.get('args', {})
+        user_limits: set[int] = set()
+        for select in self.query.main_query.main_selects:
+            if select.limit is not None:
+                user_limits.add(select.limit)
 
-        # Base case: The node is a comparison operator (e.g., EQ, LT, GT).
-        comparison_operators = {'EQ', 'NE', 'GT', 'GTE', 'LT', 'LTE'}
-        if node_class in comparison_operators:
-            left_operand = args.get('this', {})
-            right_operand = args.get('expression', {})
+        if solution_limits and not user_limits:
+            results.append(DetectedError(SqlErrors.MISSING_LIMIT_CLAUSE))
+        elif not solution_limits and user_limits:
+            results.append(DetectedError(SqlErrors.EXTRANEOUS_LIMIT_CLAUSE))
+        elif solution_limits and user_limits and not user_limits.issubset(solution_limits):
+            results.append(DetectedError(SqlErrors.INCORRECT_LIMIT, (user_limits, solution_limits)))
 
-            # We only evaluate simple "Column <operator> Literal" expressions.
-            if left_operand.get('class') == 'Column' and right_operand.get('class') == 'Literal':
-                try:
-                    column_name = left_operand['args']['this']['args']['this']
-                    literal_value = right_operand['args']['this']
-                    return [(column_name, node_class, literal_value)]
-                except KeyError:
-                    return [] # AST structure is not as expected.
-            return []
+        return results
 
-        # Recursive step: The node is a logical combiner (AND, OR).
-        logical_operators = {'And', 'Or'}
-        if node_class in logical_operators:
-            left_results = self._get_comparisons(args.get('this'))
-            right_results = self._get_comparisons(args.get('expression'))
-            return left_results + right_results
-        
+    # TODO: add tests
+    def detect_117_122_missing_extraneous_incorrect_offset_clause(self) -> list[DetectedError]:
+        results: list[DetectedError] = []
+
+        # Save all possible offset values from solutions to handle cases where multiple solutions have different offsets,
+        #  as well as set operations, which would be too complex to map to their offset values directly
+        solution_offsets: set[int] = set()
+        for solution in self.solutions:
+            # Only check main selects for OFFSET clause, since OFFSET on subqueries is less common and often not required
+            for select in solution.main_query.main_selects:
+                if select.offset is not None:
+                    solution_offsets.add(select.offset)
+
+        user_offsets: set[int] = set()
+        for select in self.query.main_query.main_selects:
+            if select.offset is not None:
+                user_offsets.add(select.offset)
+
+        if solution_offsets and not user_offsets:
+            results.append(DetectedError(SqlErrors.MISSING_OFFSET_CLAUSE))
+        elif not solution_offsets and user_offsets:
+            results.append(DetectedError(SqlErrors.EXTRANEOUS_OFFSET_CLAUSE))
+        elif solution_offsets and user_offsets and not user_offsets.issubset(solution_offsets):
+            results.append(DetectedError(SqlErrors.INCORRECT_OFFSET, (user_offsets, solution_offsets)))
+
+        return results
+
+    # TODO: implement
+    def detect_80_incorrect_function(self) -> list[DetectedError]:
+        return []
+
+    # TODO: implement
+    def detect_78_distinct_as_function_parameter_when_not_applicable(self) -> list[DetectedError]:
+        return []
+
+    # TODO: implement
+    def detect_79_missing_distinct_from_function_parameter(self) -> list[DetectedError]:
         return []
     
-    def _get_structured_expressions(self, ast: dict) -> list:
-        '''
-        Extracts a list of structured representations of aggregate/function expressions
-        from a SELECT query's AST.
-
-        Args:
-            ast: The Abstract Syntax Tree of the query.
-
-        Returns:
-            A list of tuples, e.g., [('AVG', 'Age'), ('COUNT', '*')].
-        '''
-        structured_exprs = []
-        if not ast:
-            return structured_exprs
-
-        # Navigate to the list of expressions in the SELECT clause
-        select_expressions = ast.get('args', {}).get('expressions', [])
-        
-        for expr_node in select_expressions:
-            node_class = expr_node.get('class')
-            
-            # Check for common aggregate functions
-            if node_class in {'Avg', 'Sum', 'Count', 'Min', 'Max'}:
-                target_node = expr_node.get('args', {}).get('this', {})
-                
-                # Handle the case of COUNT(*)
-                if target_node.get('class') == 'Star':
-                    structured_exprs.append((node_class, '*'))
-                # Handle functions on a specific column, e.g., AVG(Age)
-                elif target_node.get('class') == 'Column':
-                    try:
-                        col_name = target_node['args']['this']['args']['this']
-                        structured_exprs.append((node_class, col_name))
-                    except KeyError:
-                        # Could not parse column name, so skip this expression
-                        continue
-        return structured_exprs
+    # TODO: implement
+    def detect_81_incorrect_column_as_function_parameter(self) -> list[DetectedError]:
+        return []
     
-    def _get_select_columns(self, ast: dict) -> list:
-        '''
-        Extracts a list of simple column names from a SELECT query's AST.
-        This version handles simple columns, qualified columns (table.col), and aliased columns.
-        '''
-        columns = []
-        if not ast:
-            return columns
-
-        select_expressions = ast.get('args', {}).get('expressions', [])
-        
-        for expr_node in select_expressions:
-            # This recursive helper will dive into aliases to find the base column.
-            col_name = self._find_underlying_column(expr_node)
-            if col_name:
-                # Normalize to lowercase for case-insensitive comparison
-                columns.append(col_name.lower())
-        
-        return columns
-
-    def _find_underlying_column(self, node: dict):
-        '''
-        Recursively traverses an expression node to find the underlying column identifier.
-        '''
-        if not isinstance(node, dict):
-            return None
-        
-        node_class = node.get('class')
-
-        # Base case: We found a column. Handle both qualified and simple names.
-        if node_class == 'Column':
-            try:
-                # Qualified column name, e.g., c1.cID -> 'cID'
-                return node['args']['expression']['args']['this']
-            except (KeyError, TypeError):
-                try:
-                    # Simple column name, e.g., cID -> 'cID'
-                    return node['args']['this']['args']['this']
-                except (KeyError, TypeError):
-                    return None
-
-        # Recursive step: The node is an alias, so check the aliased expression.
-        if node_class == 'Alias':
-            return self._find_underlying_column(node.get('args', {}).get('this'))
-        
-        # Return None if it's another type of expression (e.g., a function or literal)
-        return None
-    
-    def _selects_star(self, ast: dict) -> bool:
-        '''
-        Checks if a `SELECT *` is used in the query by looking for a 'Star'
-        node in the AST's expression list.
-
-        Args:
-            ast: The Abstract Syntax Tree of the query.
-
-        Returns:
-            True if `SELECT *` is found, otherwise False.
-        '''
-        if not ast:
-            return False
-        try:
-            select_expressions = ast['args']['expressions']
-            for expr_node in select_expressions:
-                if expr_node.get('class') == 'Star':
-                    return True
-        except (KeyError, TypeError):
-            # Handles cases where the AST structure is unexpected
-            return False
-        return False
-    
-    def _get_orderby_columns(self, ast: dict) -> list:
-        '''
-        Extracts a list of columns and their sort direction from an ORDER BY clause.
-
-        Args:
-            ast: The Abstract Syntax Tree of the query.
-
-        Returns:
-            A list of tuples, e.g., [('col_name', 'ASC'), ('col_name2', 'DESC')].
-        '''
-        orderby_terms = []
-        if not ast:
-            return orderby_terms
-
-        orderby_node = ast.get('args', {}).get('order')
-        if not orderby_node:
-            return orderby_terms
-
-        try:
-            for term_node in orderby_node['args']['expressions']:
-                if term_node.get('class') != 'Ordered':
-                    continue
-                
-                column_node = term_node.get('args', {}).get('this')
-                
-                col_name = self._find_underlying_column(column_node)
-                
-                if col_name:
-                    # Check for the 'desc' boolean flag in the term's arguments.
-                    is_desc = term_node.get('args', {}).get('desc', False)
-                    direction = 'DESC' if is_desc else 'ASC'
-                    orderby_terms.append((col_name, direction))
-        except (KeyError, AttributeError):
-            return []
-            
-        return orderby_terms
-    #endregion Utility methods
-
 # region Helper methods
 def has_character(literal: exp.Literal, chars: str) -> bool:
     '''

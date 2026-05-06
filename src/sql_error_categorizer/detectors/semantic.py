@@ -29,15 +29,15 @@ class SemanticErrorDetector(BaseDetector):
         results: list[DetectedError] = super().run()
 
         checks = [
-            self.detect_38_tautological_or_inconsistent_expression,
-            self.detect_39_distinct_in_sum_or_avg,
-            self.detect_40_distinct_removing_important_duplicates,
-            self.detect_41_mixing_comparison_and_null,
-            self.detect_42_null_in_InAnyAll_subquery,
-            self.detect_43_join_condition_on_unmatchable_column,
-            self.detect_44_many_duplicates,
-            self.detect_45_constant_column_output,
-            self.detect_46_duplicate_column_output,
+            self.detect_40_tautological_or_inconsistent_expression,
+            self.detect_41_distinct_in_sum_or_avg,
+            self.detect_42_distinct_removing_important_duplicates,
+            self.detect_45_mixing_comparison_and_null,
+            self.detect_46_null_in_InAnyAll_subquery,
+            self.detect_47_join_condition_on_unmatchable_column,
+            self.detect_49_many_duplicates,
+            self.detect_50_constant_column_output,
+            self.detect_51_duplicate_column_output,
         ]
         
         for chk in checks:
@@ -45,7 +45,7 @@ class SemanticErrorDetector(BaseDetector):
 
         return results
 
-    def detect_38_tautological_or_inconsistent_expression(self) -> list[DetectedError]:
+    def detect_40_tautological_or_inconsistent_expression(self) -> list[DetectedError]:
         results: list[DetectedError] = []
 
         for select in self.query.selects:
@@ -97,7 +97,7 @@ class SemanticErrorDetector(BaseDetector):
 
         return results
 
-    def detect_39_distinct_in_sum_or_avg(self) -> list[DetectedError]:
+    def detect_41_distinct_in_sum_or_avg(self) -> list[DetectedError]:
         '''
             Detect SUM(DISTINCT ...) or AVG(DISTINCT ...)
 
@@ -150,11 +150,11 @@ class SemanticErrorDetector(BaseDetector):
     
     
     # TODO: implement
-    def detect_40_distinct_removing_important_duplicates(self) -> list[DetectedError]:
+    def detect_42_distinct_removing_important_duplicates(self) -> list[DetectedError]:
         return []
 
     # TODO: refactor
-    def detect_41_mixing_comparison_and_null(self) -> list[DetectedError]: 
+    def detect_45_mixing_comparison_and_null(self) -> list[DetectedError]: 
         '''Detect mixing of >0 with IS NOT NULL or empty string with IS NULL on the same column'''
         return []
 
@@ -178,14 +178,14 @@ class SemanticErrorDetector(BaseDetector):
         return results    
     
     #TODO: implement
-    def detect_42_null_in_InAnyAll_subquery(self) -> list[DetectedError]:
+    def detect_46_null_in_InAnyAll_subquery(self) -> list[DetectedError]:
         '''Detect potential NULL/UNKNOWN in IN/ANY/ALL subqueries when subquery column is nullable.
             heuristically assume that if a column is not declared as NOT NULL, then every typical 
             database state contains at least one row in which it is null. '''
         return []
 
     # TODO: implement
-    def detect_43_join_condition_on_unmatchable_column(self) -> list[DetectedError]:
+    def detect_47_join_condition_on_unmatchable_column(self) -> list[DetectedError]:
         '''
         For each JOIN … ON: require at least one “A.col = B.col” in the ON clause.
         For comma-style joins (FROM A, B): require at least one “A.col = B.col” in the WHERE.
@@ -196,131 +196,54 @@ class SemanticErrorDetector(BaseDetector):
         return []
     
     # TODO: implement
-    def detect_44_many_duplicates(self) -> list[DetectedError]:
+    def detect_49_many_duplicates(self) -> list[DetectedError]:
         return []
     
-    # TODO: refactor
-    def detect_45_constant_column_output(self) -> list[DetectedError]:
+    # TODO: add tests
+    def detect_50_constant_column_output(self) -> list[DetectedError]:
         '''
         Detect when a SELECT-list column is constrained to a constant.
         - If WHERE has A = c and A is in SELECT, warn.
         - If WHERE has A = c and also A = B, then both A and B in SELECT should warn.
         '''
-        return []
 
-        results = []
+        results: list[DetectedError] = []
 
-        # 1. Extract selected columns (simple ones only)
-        select_cols = set()
-        for expr in self.query_map.get("select_value", []):
-            expr = expr.strip()
-            if expr == "*" or "(" in expr:
-                continue
-            # Remove potential table qualification and aliases for the check
-            col = expr.split("AS")[0].strip().split(".")[-1]
-            select_cols.add(col.lower())
+        output = self.query.main_query.output
 
-        # 2. Extract WHERE clause from the query text
-        where_clause_match = re.search(
-            r"\bWHERE\b\s+(?P<w>.+?)(?=(?:\bGROUP\b|\bHAVING\b|\bORDER\b|$))",
-            self.query, re.IGNORECASE | re.DOTALL
-        )
-        if not where_clause_match:
-            return results
-
-        where_clause = where_clause_match.group("w")
-
-        # Remove subqueries from the WHERE clause text to avoid checking their conditions.
-        # This prevents the recognizer from applying a subquery's constraints to the outer query.
-        where_clause_no_subs = re.sub(r'\(\s*SELECT.*?\)', '', where_clause, flags=re.IGNORECASE | re.DOTALL)
-
-        # 3. Detect constant columns and column-to-column equalities in the processed clause
-        const_re = re.compile(
-            r"(?P<col>[a-zA-Z_]\w*(?:\.\w+)?)\s*=\s*(?P<const>'[^']*'|\d+(?:\.\d+)?)",
-            re.IGNORECASE
-        )
-        eq_re = re.compile(
-            r"(?P<c1>[a-zA-Z_]\w*(?:\.\w+)?)\s*=\s*(?P<c2>[a-zA-Z_]\w*(?:\.\w+)?)",
-            re.IGNORECASE
-        )
-
-        const_map = {}
-        for m in const_re.finditer(where_clause_no_subs):
-            col = m.group("col").split(".")[-1].lower()
-            const_map[col] = m.group("const")
-
-        adj = {}
-        for m in eq_re.finditer(where_clause_no_subs):
-            c1 = m.group("c1").split(".")[-1].lower()
-            c2 = m.group("c2").split(".")[-1].lower()
-            if c1 in const_map or c2 in const_map:
-                continue
-            # Avoid self-loops from simple equality checks
-            if c1 != c2:
-                adj.setdefault(c1, set()).add(c2)
-                adj.setdefault(c2, set()).add(c1)
-
-        # 4. Propagate constant constraints via BFS
-        constant_cols = set(const_map.keys())
-        for start_node in list(const_map):
-            queue = [start_node]
-            visited = {start_node}
-            while queue:
-                u = queue.pop(0)
-                for v in adj.get(u, []):
-                    if v not in visited:
-                        visited.add(v)
-                        queue.append(v)
-            constant_cols.update(visited)
-
-        # 5. Check if any selected columns are constrained to be constant
-        for col in select_cols:
-            if col in constant_cols:
-                # Find the original casing for the error message
-                original_col_name = next((c for c in self.query_map.get("select_value", []) if c.lower().endswith(col)), col)
-                msg = f"Column `{original_col_name}` in SELECT is constrained to constant"
-                results.append((SqlErrors.SEM_50_CONSTANT_COLUMN_OUTPUT, msg))
+        for col in output.columns:
+            if col.is_constant:
+                results.append(DetectedError(SqlErrors.CONSTANT_COLUMN_OUTPUT, (col.name,)))
 
         return results
-    
-    # TODO: refactor
-    def detect_46_duplicate_column_output(self) -> list[DetectedError]:
+
+    # TODO: add tests
+    def detect_51_duplicate_column_output(self) -> list[DetectedError]:
         '''
         Detects if the same column or expression appears multiple times in the SELECT list.
         '''
-        return []
 
-        results = []
+        results: list[DetectedError] = []
 
-        # 1. Usa il SELECT list già parsato dalla query_map
-        select_items = self.query_map.get("select_value", [])
-        if not select_items:
-            return results
+        projected_columns: set[str] = set()
 
-        norm_counts = {}
+        for select in self.query.selects:
+            for column in select.output.columns:
+                table_idx = column.table_idx
 
-        for expr in select_items:
-            # Normalizza l’espressione: rimuove alias, spazi, case-insensitive
-            clean_expr = expr.strip()
+                if table_idx is None:
+                    # TODO: handle expressions and constants in the SELECT list
+                    continue  # skip if no table reference (e.g. constant or computed column)
 
-            # Rimuovi alias "AS xyz" o finali (non rompere funzioni con parentesi)
-            clean_expr = re.sub(r"\s+AS\s+\w+$", "", clean_expr, flags=re.IGNORECASE)
-            clean_expr = re.sub(r"\s+\w+$", "", clean_expr)
+                name = f'{column.table_idx}.{column.real_name}'
 
-            # Normalizza spazi e case
-            key = clean_expr.strip().lower()
-            norm_counts[key] = norm_counts.get(key, 0) + 1
+                if name in projected_columns:
+                    results.append(DetectedError(SqlErrors.DUPLICATE_COLUMN_OUTPUT, (select.referenced_tables[table_idx], column.real_name)))
 
-        # 2. Rileva duplicati
-        for expr, count in norm_counts.items():
-            if count > 1:
-                msg = f"Output expression `{expr}` appears {count} times in SELECT"
-                results.append((
-                    SqlErrors.SEM_51_DUPLICATE_COLUMN_OUTPUT,
-                    msg
-                ))
+                projected_columns.add(name)
 
         return results
+
 
 
 

@@ -36,7 +36,7 @@ class SyntaxErrorDetector(BaseDetector):
         results: list[DetectedError] = super().run()
 
         # 1) fix stray semicolons (to allow ast building for subsequent checks)
-        checks = [self.detect_24_36_additional_omitted_semicolons]
+        checks = [self.detect_22_38_additional_omitted_semicolons]
 
         for check in checks:
             check_result, fixed_query_str = check()
@@ -47,12 +47,12 @@ class SyntaxErrorDetector(BaseDetector):
 
         # 2) detect unexisting objects (before corrections, to avoid false positives)
         unexisting_checks = [
-            self.detect_1_3_undefined_columns_ambiguous_columns,
+            self.detect_2_4_undefined_columns_ambiguous_columns,
             self.detect_2_ambiguous_function,
-            self.detect_4_undefined_functions,
-            self.detect_5_undefined_function_parameters,
-            self.detect_6_7_undefined_tables,
-            self.detect_27_using_an_undefined_correlation_name,
+            self.detect_5_undefined_functions,
+            self.detect_6_undefined_function_parameters,
+            self.detect_7_8_undefined_tables,
+            self.detect_25_using_an_undefined_correlation_name,
         ]
 
         for check in unexisting_checks:
@@ -62,13 +62,13 @@ class SyntaxErrorDetector(BaseDetector):
         # 3.1) detect fixable errors and apply corrections for improved subsequent checks
         # NOTE: leave in this order!
         misspelling_checks = [
-            self.detect_31_omitting_commas,
-            self.detect_28_confusing_table_names_with_column_names,
-            self.detect_35_nonstandard_operators,
-            self.detect_8_misspellings_schemas_tables,
-            self.detect_8_misspellings_columns,
-            self.detect_9_synonyms,
-            self.detect_10_omitted_quotes,
+            self.detect_33_omitting_commas,
+            self.detect_27_confusing_table_names_with_column_names,
+            self.detect_36_nonstandard_operators,
+            self.detect_9_misspellings_schemas_tables,
+            self.detect_9_misspellings_columns,
+            self.detect_10_synonyms,
+            self.detect_11_omitted_quotes,
         ]
 
         # 3.2) apply corrections and re-parse query
@@ -90,26 +90,26 @@ class SyntaxErrorDetector(BaseDetector):
             
         # Proceed with all other checks
         checks = [
-            self.detect_11_failure_to_specify_column_name_twice,
+            self.detect_12_failure_to_specify_column_name_twice,
             self.detect_13_data_type_mismatch,
             self.detect_14_aggregate_function_outside_select_or_having,
             self.detect_15_aggregate_functions_cannot_be_nested,
             self.detect_16_extraneous_or_omitted_grouping_column,
             self.detect_17_having_without_group_by,
-            self.detect_19_missing_quantifier,
-            self.detect_20_confusing_function_with_function_parameter,
-            self.detect_21_using_where_twice,
-            self.detect_22_omitted_from_clause,
-            self.detect_23_comparison_with_null,
-            self.detect_25_date_time_field_overflow,
-            self.detect_26_duplicate_clause,
-            self.detect_18_too_many_columns_in_subquery,
-            self.detect_29_confused_order_of_keywords,
-            self.detect_30_confused_syntax_of_keywords,
-            self.detect_32_33_curly_square_or_unmatched_brackets,
-            self.detect_12_is_where_not_applicable,
-            self.detect_34_nonstandard_keywords_or_standard_keywords_in_wrong_context,
-            self.detect_37_different_tuples_in_set_operation,
+            self.detect_106_missing_quantifier,
+            self.detect_18_confusing_function_with_function_parameter,
+            self.detect_19_using_where_twice,
+            self.detect_20_omitted_from_clause,
+            self.detect_21_comparison_with_null,
+            self.detect_23_date_time_field_overflow,
+            self.detect_24_duplicate_clause,
+            self.detect_26_too_many_columns_in_subquery,
+            self.detect_30_confused_order_of_keywords,
+            self.detect_32_confused_syntax_of_keywords,
+            self.detect_107_108_curly_square_or_unmatched_brackets,
+            self.detect_35_is_where_not_applicable,
+            self.detect_36_nonstandard_keywords_or_standard_keywords_in_wrong_context,
+            self.detect_109_different_tuples_in_set_operation,
         ]
     
         for check in checks:
@@ -144,7 +144,7 @@ class SyntaxErrorDetector(BaseDetector):
     # endregion
 
     # region 1) Semicolons
-    def detect_24_36_additional_omitted_semicolons(self) -> tuple[list[DetectedError], str]:
+    def detect_22_38_additional_omitted_semicolons(self) -> tuple[list[DetectedError], str]:
         '''
         Flags queries that omit the semicolon at the end or have multiple semicolons.
 
@@ -204,7 +204,7 @@ class SyntaxErrorDetector(BaseDetector):
     def detect_2_ambiguous_function(self) -> list[DetectedError]:
         return []
 
-    def detect_6_7_undefined_tables(self) -> list[DetectedError]:
+    def detect_7_8_undefined_tables(self) -> list[DetectedError]:
         '''
         Checks for undefined tables in the FROM clause
         '''
@@ -244,7 +244,7 @@ class SyntaxErrorDetector(BaseDetector):
 
         return results
 
-    def detect_1_3_undefined_columns_ambiguous_columns(self) -> list[DetectedError]:
+    def detect_2_4_undefined_columns_ambiguous_columns(self) -> list[DetectedError]:
         '''
         Checks for undefined and ambiguous columns.
         '''
@@ -290,7 +290,7 @@ class SyntaxErrorDetector(BaseDetector):
 
         return results
 
-    def detect_4_undefined_functions(self) -> list[DetectedError]:
+    def detect_5_undefined_functions(self) -> list[DetectedError]:
         '''Checks for undefined functions (i.e. invalid names followed by parentheses).'''
 
         results: list[DetectedError] = []
@@ -318,7 +318,7 @@ class SyntaxErrorDetector(BaseDetector):
 
         return results
 
-    def detect_5_undefined_function_parameters(self) -> list[DetectedError]:
+    def detect_6_undefined_function_parameters(self) -> list[DetectedError]:
         '''Checks for undefined function parameters'''
 
         results: list[DetectedError] = []
@@ -330,12 +330,12 @@ class SyntaxErrorDetector(BaseDetector):
         return results
     
     # TODO: implement
-    def detect_27_using_an_undefined_correlation_name(self) -> list[DetectedError]:
+    def detect_25_using_an_undefined_correlation_name(self) -> list[DetectedError]:
         return []
     # endregion
 
     # region 3) Fixable errors
-    def detect_8_misspellings_schemas_tables(self) -> list[DetectedError]:
+    def detect_9_misspellings_schemas_tables(self) -> list[DetectedError]:
         '''
         Check for misspellings in table names.
         '''
@@ -392,7 +392,7 @@ class SyntaxErrorDetector(BaseDetector):
 
         return [*results]     
 
-    def detect_8_misspellings_columns(self) -> list[DetectedError]:
+    def detect_9_misspellings_columns(self) -> list[DetectedError]:
         '''
             Check for misspellings in table and column names.
             Performs two passes: first try to match objects to their own type, then try to match to any type.
@@ -450,11 +450,11 @@ class SyntaxErrorDetector(BaseDetector):
         return [*results]
     
     # TODO: implement
-    def detect_9_synonyms(self) -> list[DetectedError]:
+    def detect_10_synonyms(self) -> list[DetectedError]:
         return []
 
     # TODO: refactor
-    def detect_10_omitted_quotes(self) -> list[DetectedError]:
+    def detect_11_omitted_quotes(self) -> list[DetectedError]:
         '''
         Checks for potential omitting of quotes around character data in WHERE/HAVING clauses.
         
@@ -565,11 +565,11 @@ class SyntaxErrorDetector(BaseDetector):
         return results
     
     # TODO: implement
-    def detect_28_confusing_table_names_with_column_names(self) -> list[DetectedError]:
+    def detect_27_confusing_table_names_with_column_names(self) -> list[DetectedError]:
         return []
     
     # TODO: refactor
-    def detect_31_omitting_commas(self) -> list[DetectedError]:
+    def detect_33_omitting_commas(self) -> list[DetectedError]:
         '''
         Flags queries where commas are likely missing between column expressions 
         (e.g., SELECT name age FROM ..., GROUP BY x y).
@@ -630,7 +630,7 @@ class SyntaxErrorDetector(BaseDetector):
 
         return results
 
-    def detect_35_nonstandard_operators(self) -> list[DetectedError]:
+    def detect_36_nonstandard_operators(self) -> list[DetectedError]:
         '''
         Flags usage of non-standard or language-specific operators like &&, ||, ==, etc.
         '''
@@ -666,7 +666,7 @@ class SyntaxErrorDetector(BaseDetector):
 
     # region 4) Other checks
     # TODO: implement
-    def detect_11_failure_to_specify_column_name_twice(self) -> list[DetectedError]:
+    def detect_12_failure_to_specify_column_name_twice(self) -> list[DetectedError]:
         return []
     
     def detect_13_data_type_mismatch(self) -> list[DetectedError]:
@@ -863,10 +863,10 @@ class SyntaxErrorDetector(BaseDetector):
         return results
     
     #TODO: implement
-    def detect_20_confusing_function_with_function_parameter(self) -> list[DetectedError]:
+    def detect_18_confusing_function_with_function_parameter(self) -> list[DetectedError]:
         return []
     
-    def detect_21_using_where_twice(self) -> list[DetectedError]:
+    def detect_19_using_where_twice(self) -> list[DetectedError]:
         '''
         Flags multiple WHERE clauses in a single query block (main query, CTEs, subqueries).
         '''
@@ -888,7 +888,7 @@ class SyntaxErrorDetector(BaseDetector):
 
         return results
 
-    def detect_22_omitted_from_clause(self) -> list[DetectedError]:
+    def detect_20_omitted_from_clause(self) -> list[DetectedError]:
         '''
         Flags queries that omit the FROM clause entirely when it's required.
         A FROM clause is not required if:
@@ -917,7 +917,7 @@ class SyntaxErrorDetector(BaseDetector):
 
         return results
 
-    def detect_23_comparison_with_null(self) -> list[DetectedError]:
+    def detect_21_comparison_with_null(self) -> list[DetectedError]:
         '''
         Flags SQL comparisons using = NULL, <> NULL, etc. instead of IS NULL / IS NOT NULL.
         '''
@@ -938,10 +938,10 @@ class SyntaxErrorDetector(BaseDetector):
         return results
 
     # TODO: implement, needs AST
-    def detect_25_date_time_field_overflow(self) -> list[DetectedError]:
+    def detect_23_date_time_field_overflow(self) -> list[DetectedError]:
         return []
 
-    def detect_26_duplicate_clause(self) -> list[DetectedError]:
+    def detect_24_duplicate_clause(self) -> list[DetectedError]:
         '''
         Flags queries that contain duplicate clauses (e.g., two WHERE clauses).
         '''
@@ -966,7 +966,7 @@ class SyntaxErrorDetector(BaseDetector):
 
         return results
 
-    def detect_18_too_many_columns_in_subquery(self) -> list[DetectedError]:
+    def detect_26_too_many_columns_in_subquery(self) -> list[DetectedError]:
         '''
         Flags subqueries that return more columns than expected in contexts like WHERE IN (subquery).
         '''
@@ -987,7 +987,7 @@ class SyntaxErrorDetector(BaseDetector):
 
         return results
     
-    def detect_29_confused_order_of_keywords(self) -> list[DetectedError]:
+    def detect_30_confused_order_of_keywords(self) -> list[DetectedError]:
         '''
         Flags queries where the standard order of SQL clauses is not respected.
         Expected order:
@@ -1038,7 +1038,7 @@ class SyntaxErrorDetector(BaseDetector):
             
     # TODO: check and refactor
     # NOTE: is this implementation actually coherent with the error description?
-    def detect_30_confused_syntax_of_keywords(self) -> list[DetectedError]:
+    def detect_32_confused_syntax_of_keywords(self) -> list[DetectedError]:
         '''
         Flags use of SQL keywords like LIKE, IN, BETWEEN, etc. with incorrect function-like syntax (e.g., LIKE(...)).
         '''
@@ -1080,7 +1080,7 @@ class SyntaxErrorDetector(BaseDetector):
 
         return results
     
-    def detect_32_33_curly_square_or_unmatched_brackets(self) -> list[DetectedError]:
+    def detect_107_108_curly_square_or_unmatched_brackets(self) -> list[DetectedError]:
         '''
         Flags unmatched parentheses or usage of non-standard square or curly brackets in the SQL query.
         '''
@@ -1128,7 +1128,7 @@ class SyntaxErrorDetector(BaseDetector):
         return results
     
 
-    def detect_12_is_where_not_applicable(self) -> list[DetectedError]:
+    def detect_35_is_where_not_applicable(self) -> list[DetectedError]:
         '''
         Find all erroneous usages of IS where it is not applicable
         '''
@@ -1167,15 +1167,15 @@ class SyntaxErrorDetector(BaseDetector):
         return results
     
     #TODO: implement
-    def detect_34_nonstandard_keywords_or_standard_keywords_in_wrong_context(self) -> list[DetectedError]:
+    def detect_36_nonstandard_keywords_or_standard_keywords_in_wrong_context(self) -> list[DetectedError]:
         return []
 
     # TODO: implement
-    def detect_37_different_tuples_in_set_operation(self) -> list[DetectedError]:
+    def detect_109_different_tuples_in_set_operation(self) -> list[DetectedError]:
         return []
     
     # TODO: implement
-    def detect_19_missing_quantifier(self) -> list[DetectedError]:
+    def detect_106_missing_quantifier(self) -> list[DetectedError]:
         return []
     # endregion
 

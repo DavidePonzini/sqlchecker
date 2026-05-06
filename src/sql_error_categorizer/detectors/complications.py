@@ -32,31 +32,31 @@ class ComplicationDetector(BaseDetector):
         results: list[DetectedError] = super().run()
 
         checks = [
-            self.detect_95_unnecessary_complication,
-            self.detect_96_unnecessary_distinct_in_select_clause,
-            self.detect_97_unnecessary_table_reference,
-            self.detect_98_unused_correlation_name,
-            self.detect_99_tables_have_same_data,
-            self.detect_100_correlation_name_identical_to_table_name,
-            self.detect_101_unnecessary_general_comparison_operator,
-            self.detect_102_like_without_wildcards,
-            self.detect_103_unnecessarily_complicated_select_in_exists_subquery,
-            self.detect_104_in_exists_can_be_replaced_by_comparison,
-            self.detect_105_unnecessary_aggregate_function,
-            self.detect_106_unnecessary_distinct_in_aggregate_function,
-            self.detect_107_unnecessary_argument_of_count,
-            self.detect_108_unnecessary_group_by_in_exists_subquery,
-            self.detect_109_group_by_with_singleton_groups,
-            self.detect_110_group_by_with_only_a_single_group,
-            self.detect_111_group_by_can_be_replaced_by_distinct,
-            self.detect_112_union_can_be_replaced_by_or,
-            self.detect_113_unnecessary_column_in_order_by_clause,
-            self.detect_114_order_by_in_subquery,
-            self.detect_115_inefficient_having,
-            self.detect_116_inefficient_union,
-            self.detect_117_condition_in_the_subquery_can_be_moved_up,
-            self.detect_118_outer_join_can_be_replaced_by_inner_join,
-            self.detect_119_unused_cte,
+            self.detect_82_unnecessary_complication,
+            self.detect_83_unnecessary_distinct_in_select_clause,
+            self.detect_84_unnecessary_table_reference,
+            self.detect_85_unused_correlation_name,
+            self.detect_86_tables_have_same_data,
+            self.detect_125_correlation_name_identical_to_table_name,
+            self.detect_87_unnecessary_general_comparison_operator,
+            self.detect_88_like_without_wildcards,
+            self.detect_89_unnecessarily_complicated_select_in_exists_subquery,
+            self.detect_90_in_exists_can_be_replaced_by_comparison,
+            self.detect_91_unnecessary_aggregate_function,
+            self.detect_92_unnecessary_distinct_in_aggregate_function,
+            self.detect_93_unnecessary_argument_of_count,
+            self.detect_94_unnecessary_group_by_in_exists_subquery,
+            self.detect_95_group_by_with_singleton_groups,
+            self.detect_96_group_by_with_only_a_single_group,
+            self.detect_97_group_by_can_be_replaced_by_distinct,
+            self.detect_98_union_can_be_replaced_by_or,
+            self.detect_99_unnecessary_column_in_order_by_clause,
+            self.detect_100_order_by_in_subquery,
+            self.detect_101_inefficient_having,
+            self.detect_102_inefficient_union,
+            self.detect_103_condition_in_the_subquery_can_be_moved_up,
+            self.detect_104_outer_join_can_be_replaced_by_inner_join,
+            self.detect_126_unused_cte,
         ]
         
         for chk in checks:
@@ -64,11 +64,11 @@ class ComplicationDetector(BaseDetector):
 
         return results
 
-    def detect_95_unnecessary_complication(self) -> list[DetectedError]:
+    def detect_82_unnecessary_complication(self) -> list[DetectedError]:
         '''NOTE: this is an umbrella term, so it can't be directly detected.'''
         return []
 
-    def detect_96_unnecessary_distinct_in_select_clause(self) -> list[DetectedError]:
+    def detect_83_unnecessary_distinct_in_select_clause(self) -> list[DetectedError]:
         '''
         Flags a SELECT DISTINCT clause that is unnecessary because the selected
         columns are already unique due to existing constraints.
@@ -88,7 +88,7 @@ class ComplicationDetector(BaseDetector):
         return result
 
     # TODO: refactor
-    def detect_97_unnecessary_table_reference(self) -> list[DetectedError]:
+    def detect_84_unnecessary_table_reference(self) -> list[DetectedError]:
         '''
         Flags a query that joins to a table not present in the correct solution.
         '''
@@ -119,22 +119,22 @@ class ComplicationDetector(BaseDetector):
         return results
     
     # TODO: implement
-    def detect_98_unused_correlation_name(self) -> list[DetectedError]:
+    def detect_85_unused_correlation_name(self) -> list[DetectedError]:
         return []
     
     # TODO: implement
-    def detect_99_tables_have_same_data(self) -> list[DetectedError]:
+    def detect_86_tables_have_same_data(self) -> list[DetectedError]:
         return []
 
     # TODO: implement
-    def detect_100_correlation_name_identical_to_table_name(self) -> list[DetectedError]:
+    def detect_125_correlation_name_identical_to_table_name(self) -> list[DetectedError]:
         return []
     
     # TODO: implement
-    def detect_101_unnecessary_general_comparison_operator(self) -> list[DetectedError]:
+    def detect_87_unnecessary_general_comparison_operator(self) -> list[DetectedError]:
         return []
     
-    def detect_102_like_without_wildcards(self) -> list[DetectedError]:
+    def detect_88_like_without_wildcards(self) -> list[DetectedError]:
         '''
         Flags queries where the LIKE operator is used without wildcards ('%' or '_').
         This indicates a potential misunderstanding, where the '=' operator should
@@ -168,18 +168,18 @@ class ComplicationDetector(BaseDetector):
         return results
     
     # TODO: implement
-    def detect_103_unnecessarily_complicated_select_in_exists_subquery(self) -> list[DetectedError]:
+    def detect_89_unnecessarily_complicated_select_in_exists_subquery(self) -> list[DetectedError]:
         return []
     
     # TODO: implement
-    def detect_104_in_exists_can_be_replaced_by_comparison(self) -> list[DetectedError]:
+    def detect_90_in_exists_can_be_replaced_by_comparison(self) -> list[DetectedError]:
         return []
     
     # TODO: implement
-    def detect_105_unnecessary_aggregate_function(self) -> list[DetectedError]:
+    def detect_91_unnecessary_aggregate_function(self) -> list[DetectedError]:
         return []
     
-    def detect_106_unnecessary_distinct_in_aggregate_function(self) -> list[DetectedError]:
+    def detect_92_unnecessary_distinct_in_aggregate_function(self) -> list[DetectedError]:
         '''MIN and MAX never require DISTINCT. For other aggregate functions, DISTINCT is unnecessary if the argument is unique.'''
 
         results: list[DetectedError] = []
@@ -220,14 +220,14 @@ class ComplicationDetector(BaseDetector):
                                 break
         return results
     
-    def detect_107_unnecessary_argument_of_count(self) -> list[DetectedError]:
+    def detect_93_unnecessary_argument_of_count(self) -> list[DetectedError]:
         return []
     
     # TODO: implement
-    def detect_108_unnecessary_group_by_in_exists_subquery(self) -> list[DetectedError]:
+    def detect_94_unnecessary_group_by_in_exists_subquery(self) -> list[DetectedError]:
         return []
     
-    def detect_109_group_by_with_singleton_groups(self) -> list[DetectedError]:
+    def detect_95_group_by_with_singleton_groups(self) -> list[DetectedError]:
         '''
         Flags GROUP BY clauses on singleton groups due to the presence
         of UNIQUE constraints on the grouped columns.
@@ -253,10 +253,10 @@ class ComplicationDetector(BaseDetector):
         return results
     
     # TODO: implement
-    def detect_110_group_by_with_only_a_single_group(self) -> list[DetectedError]:
+    def detect_96_group_by_with_only_a_single_group(self) -> list[DetectedError]:
         return []
     
-    def detect_111_group_by_can_be_replaced_by_distinct(self) -> list[DetectedError]:
+    def detect_97_group_by_can_be_replaced_by_distinct(self) -> list[DetectedError]:
         '''
         Flags GROUP BY clauses that can be replaced by SELECT DISTINCT.
         This occurs when all selected columns are included in the GROUP BY clause
@@ -303,11 +303,11 @@ class ComplicationDetector(BaseDetector):
 
     
     # TODO: implement
-    def detect_112_union_can_be_replaced_by_or(self) -> list[DetectedError]:
+    def detect_98_union_can_be_replaced_by_or(self) -> list[DetectedError]:
         return []
     
     # TODO: refactor
-    def detect_113_unnecessary_column_in_order_by_clause(self) -> list[DetectedError]:
+    def detect_99_unnecessary_column_in_order_by_clause(self) -> list[DetectedError]:
         '''
         Flags when the ORDER BY clause contains unnecessary columns in addition
         to the required ones.
@@ -336,7 +336,7 @@ class ComplicationDetector(BaseDetector):
         return results
     
     # TODO: implement
-    def detect_114_order_by_in_subquery(self) -> list[DetectedError]:
+    def detect_100_order_by_in_subquery(self) -> list[DetectedError]:
         '''
         Flags when a subquery contains an ORDER BY clause.
         Subqueries both ORDER BY and LIMIT are considered valid.
@@ -359,151 +359,37 @@ class ComplicationDetector(BaseDetector):
         return results
     
     # TODO: implement
-    def detect_115_inefficient_having(self) -> list[DetectedError]:
+    def detect_101_inefficient_having(self) -> list[DetectedError]:
         return []
     
     # TODO: implement
-    def detect_116_inefficient_union(self) -> list[DetectedError]:
+    def detect_102_inefficient_union(self) -> list[DetectedError]:
         return []
     
     # TODO: implement
-    def detect_117_condition_in_the_subquery_can_be_moved_up(self) -> list[DetectedError]:
+    def detect_103_condition_in_the_subquery_can_be_moved_up(self) -> list[DetectedError]:
         return []
     
     # TODO: implement
-    def detect_118_outer_join_can_be_replaced_by_inner_join(self) -> list[DetectedError]:
+    def detect_104_outer_join_can_be_replaced_by_inner_join(self) -> list[DetectedError]:
         return []
 
-    # TODO: implement
-    def detect_119_unused_cte(self) -> list[DetectedError]:
-        return []
+    # TODO: add tests
+    def detect_126_unused_cte(self) -> list[DetectedError]:
+        results: list[DetectedError] = []
 
-    #region Utility methods
-    def _get_select_columns(self, ast: dict) -> list:
-        '''
-        Extracts a list of simple column names from a SELECT query's AST.
-        '''
-        columns = []
-        if not ast:
-            return columns
-
-        select_expressions = ast.get('args', {}).get('expressions', [])
+        if not self.query.ctes:
+            return results
         
-        for expr_node in select_expressions:
-            col_name = self._find_underlying_column(expr_node)
-            if col_name:
-                columns.append(col_name)
-        
-        return columns
-    def _find_underlying_column(self, node: dict):
-        '''
-        Recursively traverses an expression node to find the underlying column identifier.
-        '''
-        if not isinstance(node, dict):
-            return None
-        
-        node_class = node.get('class')
+        used_ctes: dict[int, bool] = {i: False for i in range(len(self.query.ctes))}
 
-        if node_class == 'Paren':
-            return self._find_underlying_column(node.get('args', {}).get('this'))
+        for select in self.query.selects:
+            for table in select.referenced_tables:
+                if table.cte_idx is not None:
+                    used_ctes[table.cte_idx] = True
 
-        if node_class == 'Column':
-            try:
-                return node['args']['expression']['args']['this']
-            except (KeyError, TypeError):
-                try:
-                    return node['args']['this']['args']['this']
-                except (KeyError, TypeError):
-                    return None
+        for cte_idx, used in used_ctes.items():
+            if not used:
+                results.append(DetectedError(SqlErrors.UNUSED_CTE, (self.query.ctes[cte_idx].sql,)))
 
-        if node_class == 'Alias':
-            return self._find_underlying_column(node.get('args', {}).get('this'))
-    def _get_from_tables(self, ast: dict, with_alias=False) -> list:
-        '''
-        Extracts a list of all table names from the FROM and JOIN clauses of a query's AST.
-        '''
-        tables = []
-        if not ast:
-            return tables
-        
-        args = ast.get('args', {})
-
-        # 1. Process the main table from the 'from' clause
-        from_node = args.get('from')
-        if from_node:
-            # The actual table data is inside the 'this' argument of the 'From' node
-            main_table_node = from_node.get('args', {}).get('this')
-            if main_table_node:
-                self._collect_tables_recursive(main_table_node, tables, with_alias)
-
-        # 2. Process all tables from the 'joins' list
-        join_nodes = args.get('joins', [])
-        for join_node in join_nodes:
-            self._collect_tables_recursive(join_node, tables, with_alias)
-                
-        return list(set(tables))
-    def _collect_tables_recursive(self, node: dict, tables: list, with_alias=False):
-        '''
-        Recursively traverses a FROM clause node (including joins) to collect table names.
-        '''
-        if not isinstance(node, dict):
-            return
-
-        node_class = node.get('class')
-
-        # This part handles aliased tables (e.g., "customer c") and regular tables
-        if node_class == 'Alias':
-            underlying_node = node.get('args', {}).get('this')
-            # Recurse in case the alias is on a subquery or another join
-            self._collect_tables_recursive(underlying_node, tables, with_alias)
-
-        elif node_class == 'Table':
-            try:
-                # The AST nests identifiers, so we go deep to get the name
-                table_name = node['args']['this']['args']['this']
-                alias_node = node.get('args', {}).get('alias')
-                if with_alias and alias_node:
-                    alias_name = alias_node.get('args', {}).get('this', {}).get('args', {}).get('this')
-                    tables.append(f"{table_name} AS {alias_name}")
-                else:
-                    tables.append(table_name)
-            except (KeyError, TypeError):
-                pass
-        
-        # This part handles Join nodes found in the 'joins' list
-        elif node_class == 'Join':
-            # The joined table is in the 'this' argument of the Join node
-            self._collect_tables_recursive(node.get('args', {}).get('this'), tables, with_alias)
-            # The other side of the join is already handled in the 'from' clause,
-            # but we check for 'expression' for other potential join structures.
-            if 'expression' in node.get('args', {}):
-                self._collect_tables_recursive(node.get('args', {}).get('expression'), tables, with_alias)
-    def _get_orderby_columns(self, ast: dict) -> list:
-        '''
-        Extracts a list of columns and their sort direction from an ORDER BY clause.
-        '''
-        orderby_terms = []
-        if not ast:
-            return orderby_terms
-
-        orderby_node = ast.get('args', {}).get('order')
-        if not orderby_node:
-            return orderby_terms
-
-        try:
-            for term_node in orderby_node['args']['expressions']:
-                if term_node.get('class') != 'Ordered':
-                    continue
-                
-                column_node = term_node.get('args', {}).get('this')
-                
-                col_name = self._find_underlying_column(column_node)
-                
-                if col_name:
-                    direction = term_node.get('args', {}).get('direction', 'ASC').upper()
-                    orderby_terms.append((col_name, direction))
-        except (KeyError, AttributeError):
-            return []
-            
-        return orderby_terms
-    #endregion Utility methods
+        return results
