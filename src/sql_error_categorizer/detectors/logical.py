@@ -590,82 +590,78 @@ class LogicalErrorDetector(BaseDetector):
         results: list[DetectedError] = []
 
         # If all solutions have a WHERE clause, then the user's query should have one as well
-        solution_has_where = True
+        # If all solutions don't have a WHERE clause, then the user's query shouldn't have one either
+        # Otherwise, we cannot be sure if a WHERE clause is required or not, so we skip this check to avoid false positives
+        solution_has_where: set[bool] = set()
         for solution in self.solutions:
-            if not any(select.where for select in solution.selects):
-                solution_has_where = False
-                break
+            solution_has_where.add(any(select.where for select in solution.selects))
 
         user_has_where = any(select.where for select in self.query.selects)
 
-        if solution_has_where and not user_has_where:
+        if solution_has_where == {True} and not user_has_where:
             results.append(DetectedError(SqlErrors.MISSING_WHERE_CLAUSE))
-        elif not solution_has_where and user_has_where:
+        elif solution_has_where == {False} and user_has_where:
             results.append(DetectedError(SqlErrors.EXTRANEOUS_WHERE_CLAUSE))
 
         return results
     
-    # TODO: add tests
     def detect_113_119_missing_extraneous_group_by_clause(self) -> list[DetectedError]:
         results: list[DetectedError] = []
 
         # If all solutions have a GROUP BY clause, then the user's query should have one as well
-        solution_has_group_by = True
+        # If all solutions don't have a GROUP BY clause, then the user's query shouldn't have one either
+        # Otherwise, we cannot be sure if a GROUP BY clause is required or not, so we skip this check to avoid false positives
+        solution_has_group_by: set[bool] = set()
         for solution in self.solutions:
-            if not any(select.group_by for select in solution.selects):
-                solution_has_group_by = False
-                break
+            solution_has_group_by.add(any(select.group_by for select in solution.selects))
 
         user_has_group_by = any(select.group_by for select in self.query.selects)
 
-        if solution_has_group_by and not user_has_group_by:
+        if solution_has_group_by == {True} and not user_has_group_by:
             results.append(DetectedError(SqlErrors.MISSING_GROUP_BY_CLAUSE))
-        elif not solution_has_group_by and user_has_group_by:
+        elif solution_has_group_by == {False} and user_has_group_by:
             results.append(DetectedError(SqlErrors.EXTRANEOUS_GROUP_BY_CLAUSE))
     
         return results
     
-    # TODO: add tests
     def detect_114_120_missing_extraneous_having_clause(self) -> list[DetectedError]:
         results: list[DetectedError] = []
 
         # If all solutions have a HAVING clause, then the user's query should have one as well
-        solution_has_having = True
+        # If all solutions don't have a HAVING clause, then the user's query shouldn't have one either
+        # Otherwise, we cannot be sure if a HAVING clause is required or not, so we skip this check to avoid false positives
+        solution_has_having: set[bool] = set()
         for solution in self.solutions:
-            if not any(select.having for select in solution.selects):
-                solution_has_having = False
-                break
+            solution_has_having.add(any(select.having for select in solution.selects))
 
         user_has_having = any(select.having for select in self.query.selects)
 
-        if solution_has_having and not user_has_having:
+        if solution_has_having == {True} and not user_has_having:
             results.append(DetectedError(SqlErrors.MISSING_HAVING_CLAUSE))
-        elif not solution_has_having and user_has_having:
+        elif solution_has_having == {False} and user_has_having:
             results.append(DetectedError(SqlErrors.EXTRANEOUS_HAVING_CLAUSE))
 
         return results
 
-    # TODO: add tests
     def detect_115_121_missing_extraneous_order_by_clause(self) -> list[DetectedError]:
         results: list[DetectedError] = []
 
         # If all solutions have an ORDER BY clause, then the user's query should have one as well
-        solution_has_order_by = True
+        # If all solutions don't have an ORDER BY clause, then the user's query shouldn't have one either
+        # Otherwise, we cannot be sure if an ORDER BY clause is required or not, so we skip this check to avoid false positives
+        solution_has_order_by: set[bool] = set()
         for solution in self.solutions:
-            if not any(select.order_by for select in solution.selects):
-                solution_has_order_by = False
-                break
+            solution_has_order_by.add(any(select.order_by for select in solution.selects))
 
         user_has_order_by = any(select.order_by for select in self.query.selects)
 
-        if solution_has_order_by and not user_has_order_by:
+        if solution_has_order_by == {True} and not user_has_order_by:
             results.append(DetectedError(SqlErrors.MISSING_ORDER_BY_CLAUSE))
-        elif not solution_has_order_by and user_has_order_by:
+        elif solution_has_order_by == {False} and user_has_order_by:
             results.append(DetectedError(SqlErrors.EXTRANEOUS_ORDER_BY_CLAUSE))
 
         return results
 
-    # TODO: add tests
     def detect_116_121_123_missing_extraneous_incorrect_limit_clause(self) -> list[DetectedError]:
         results: list[DetectedError] = []
 
@@ -677,8 +673,7 @@ class LogicalErrorDetector(BaseDetector):
         for solution in self.solutions:
             # Only check main selects for LIMIT clause, since LIMIT on subqueries is less common and often not required
             for select in solution.main_query.main_selects:
-                if select.limit:
-                    solution_limits.add(select.limit)
+                solution_limits.add(select.limit)
 
         user_limits: set[int] = set()
         for select in self.query.main_query.main_selects:
@@ -700,7 +695,6 @@ class LogicalErrorDetector(BaseDetector):
 
         return results
 
-    # TODO: add tests
     def detect_117_122_missing_extraneous_incorrect_offset_clause(self) -> list[DetectedError]:
         results: list[DetectedError] = []
 
