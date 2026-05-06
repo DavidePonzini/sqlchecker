@@ -199,13 +199,17 @@ class SemanticErrorDetector(BaseDetector):
     def detect_49_many_duplicates(self) -> list[DetectedError]:
         return []
     
-    # TODO: add tests
+    # TODO: implement
     def detect_50_constant_column_output(self) -> list[DetectedError]:
         '''
-        Detect when a SELECT-list column is constrained to a constant.
-        - If WHERE has A = c and A is in SELECT, warn.
-        - If WHERE has A = c and also A = B, then both A and B in SELECT should warn.
+            Detect if the output of the query contains a constant value.
+            Exclude constants that are likely intentional, such as SELECT 1, SELECT 'constant', etc.
+            Also exclude aggregation functions that return constants, such as COUNT(*), SUM(*), etc.
         '''
+
+        return []
+    
+        # NOTE: the following implementatation is incorrect, since it selects only intentional constants
 
         results: list[DetectedError] = []
 
@@ -217,17 +221,55 @@ class SemanticErrorDetector(BaseDetector):
 
         return results
 
-    # TODO: add tests
     def detect_51_duplicate_column_output(self) -> list[DetectedError]:
         '''
         Detects if the same column or expression appears multiple times in the SELECT list.
+        Also include columns that are equated.
         '''
 
         results: list[DetectedError] = []
 
         projected_columns: set[str] = set()
 
+        # list of equivalence classes of columns that are equated in the WHERE clause (e.g. A.id = B.id means A.id and B.id are equivalent for the purpose of duplicate detection)
+        column_equivalences: list[set[str]] = []
+
         for select in self.query.selects:
+            if select.where:
+                equalities = util.ast.extract_column_equalities(select.where)
+
+                for left, right in equalities:
+                    left_name = util.ast.column.get_real_name(left)
+                    left_idx = select._get_table_idx_for_column(left)
+
+                    right_name = util.ast.column.get_real_name(right)
+                    right_idx = select._get_table_idx_for_column(right)
+
+                    if left_idx is not None and right_idx is not None:
+                        left_full = f'{left_idx}.{left_name}'
+                        right_full = f'{right_idx}.{right_name}'
+
+                        # Check if left and right are already in an equivalence class
+                        left_class = None
+                        right_class = None
+
+                        for eq_class in column_equivalences:
+                            if left_full in eq_class:
+                                left_class = eq_class
+                            if right_full in eq_class:
+                                right_class = eq_class
+
+                        if left_class and right_class and left_class != right_class:
+                            # Merge the two classes
+                            left_class.update(right_class)
+                            column_equivalences.remove(right_class)
+                        elif left_class and not right_class:
+                            left_class.add(right_full)
+                        elif right_class and not left_class:
+                            right_class.add(left_full)
+                        else:
+                            column_equivalences.append(set([left_full, right_full]))
+
             for column in select.output.columns:
                 table_idx = column.table_idx
 
@@ -237,13 +279,18 @@ class SemanticErrorDetector(BaseDetector):
 
                 name = f'{column.table_idx}.{column.real_name}'
 
+                equivalent_names = set()
+                for eq_class in column_equivalences:
+                    if name in eq_class:
+                        equivalent_names.update(eq_class)
+
                 if name in projected_columns:
-                    results.append(DetectedError(SqlErrors.DUPLICATE_COLUMN_OUTPUT, (select.referenced_tables[table_idx], column.real_name)))
+                    results.append(DetectedError(SqlErrors.DUPLICATE_COLUMN_OUTPUT, (select.referenced_tables[table_idx].name, column.real_name)))
 
                 projected_columns.add(name)
+                projected_columns.update(equivalent_names)
 
         return results
-
 
 
 

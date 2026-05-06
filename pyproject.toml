@@ -21,7 +21,7 @@ dependencies = [
     "pyyaml",
     "sqlparse",
     "sqlglot",
-    "sqlscope>=1.0.15",
+    "sqlscope>=1.0.16",
     "sql_error_taxonomy>=2.0.0",
     "z3-solver",
     "python-dateutil",
