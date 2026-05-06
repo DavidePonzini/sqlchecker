@@ -586,15 +586,14 @@ class LogicalErrorDetector(BaseDetector):
     def detect_77_incorrect_ordering_of_rows(self) -> list[DetectedError]:
         return []
     
-    # TODO: add tests
     def detect_112_118_missing_extraneous_where_clause(self) -> list[DetectedError]:
         results: list[DetectedError] = []
 
-        # If any solution has a WHERE clause, then the user's query should have one as well
-        solution_has_where = False
+        # If all solutions have a WHERE clause, then the user's query should have one as well
+        solution_has_where = True
         for solution in self.solutions:
-            if any(select.where for select in solution.selects):
-                solution_has_where = True
+            if not any(select.where for select in solution.selects):
+                solution_has_where = False
                 break
 
         user_has_where = any(select.where for select in self.query.selects)
@@ -610,11 +609,11 @@ class LogicalErrorDetector(BaseDetector):
     def detect_113_119_missing_extraneous_group_by_clause(self) -> list[DetectedError]:
         results: list[DetectedError] = []
 
-        # If any solution has a GROUP BY clause, then the user's query should have one as well
-        solution_has_group_by = False
+        # If all solutions have a GROUP BY clause, then the user's query should have one as well
+        solution_has_group_by = True
         for solution in self.solutions:
-            if any(select.group_by for select in solution.selects):
-                solution_has_group_by = True
+            if not any(select.group_by for select in solution.selects):
+                solution_has_group_by = False
                 break
 
         user_has_group_by = any(select.group_by for select in self.query.selects)
@@ -630,11 +629,11 @@ class LogicalErrorDetector(BaseDetector):
     def detect_114_120_missing_extraneous_having_clause(self) -> list[DetectedError]:
         results: list[DetectedError] = []
 
-        # If any solution has a HAVING clause, then the user's query should have one as well
-        solution_has_having = False
+        # If all solutions have a HAVING clause, then the user's query should have one as well
+        solution_has_having = True
         for solution in self.solutions:
-            if any(select.having for select in solution.selects):
-                solution_has_having = True
+            if not any(select.having for select in solution.selects):
+                solution_has_having = False
                 break
 
         user_has_having = any(select.having for select in self.query.selects)
@@ -650,11 +649,11 @@ class LogicalErrorDetector(BaseDetector):
     def detect_115_121_missing_extraneous_order_by_clause(self) -> list[DetectedError]:
         results: list[DetectedError] = []
 
-        # If any solution has an ORDER BY clause, then the user's query should have one as well
-        solution_has_order_by = False
+        # If all solutions have an ORDER BY clause, then the user's query should have one as well
+        solution_has_order_by = True
         for solution in self.solutions:
-            if any(select.order_by for select in solution.selects):
-                solution_has_order_by = True
+            if not any(select.order_by for select in solution.selects):
+                solution_has_order_by = False
                 break
 
         user_has_order_by = any(select.order_by for select in self.query.selects)
@@ -672,19 +671,25 @@ class LogicalErrorDetector(BaseDetector):
 
         # Save all possible limit values from solutions to handle cases where multiple solutions have different limits,
         #  as well as set operations, which would be too complex to map to their limit values directly
-        solution_limits: set[int] = set()
+        solution_limits: set[int | None] = set()
         
-        # If any solution has a LIMIT clause, then the user's query should have one as well
+        # If all solutions have a LIMIT clause, then the user's query should have one as well
         for solution in self.solutions:
             # Only check main selects for LIMIT clause, since LIMIT on subqueries is less common and often not required
             for select in solution.main_query.main_selects:
-                if select.limit is not None:
+                if select.limit:
                     solution_limits.add(select.limit)
 
         user_limits: set[int] = set()
         for select in self.query.main_query.main_selects:
             if select.limit is not None:
                 user_limits.add(select.limit)
+
+        # if at least a solution doesn't have a limit, but other solutions do, we cannot be sure if a limit is required or not, so we skip this check to avoid false positives
+        if None in solution_limits and len(solution_limits) > 1:
+            return results
+        
+        solution_limits.discard(None)  # remove None if present, since we already handled the case where some solutions have limits and others don't
 
         if solution_limits and not user_limits:
             results.append(DetectedError(SqlErrors.MISSING_LIMIT_CLAUSE))
@@ -701,17 +706,22 @@ class LogicalErrorDetector(BaseDetector):
 
         # Save all possible offset values from solutions to handle cases where multiple solutions have different offsets,
         #  as well as set operations, which would be too complex to map to their offset values directly
-        solution_offsets: set[int] = set()
+        solution_offsets: set[int | None] = set()
         for solution in self.solutions:
             # Only check main selects for OFFSET clause, since OFFSET on subqueries is less common and often not required
             for select in solution.main_query.main_selects:
-                if select.offset is not None:
-                    solution_offsets.add(select.offset)
+                solution_offsets.add(select.offset)
 
         user_offsets: set[int] = set()
         for select in self.query.main_query.main_selects:
             if select.offset is not None:
                 user_offsets.add(select.offset)
+
+        # if at least a solution doesn't have an offset, but other solutions do, we cannot be sure if an offset is required or not, so we skip this check to avoid false positives
+        if None in solution_offsets and len(solution_offsets) > 1:
+            return results
+        
+        solution_offsets.discard(None)  # remove None if present, since we already handled the case where some solutions have offsets and others don't
 
         if solution_offsets and not user_offsets:
             results.append(DetectedError(SqlErrors.MISSING_OFFSET_CLAUSE))
