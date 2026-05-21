@@ -3,7 +3,7 @@ requires = ["hatchling"]
 build-backend = "hatchling.build"
 
 [project]
-name = "sqlcheck"
+name = "sqlchecker"
 version = "0.3.1"
 authors = [
   { name="Davide Ponzini", email="davide.ponzini95@gmail.com" },
@@ -28,6 +28,6 @@ dependencies = [
 ]
 
 [project.urls]
-"Repository" = "https://github.com/DavidePonzini/sqlcheck"
-"Documentation" = "https://sqlcheck.readthedocs.io/en/latest/index.html"
-"Bug Tracker" = "https://github.com/DavidePonzini/sqlcheck/issues"
+"Repository" = "https://github.com/DavidePonzini/sqlchecker"
+"Documentation" = "https://sqlchecker.readthedocs.io/en/latest/index.html"
+"Bug Tracker" = "https://github.com/DavidePonzini/sqlchecker/issues"

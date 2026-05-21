@@ -2,7 +2,7 @@
 # Type: PyPi
 # Author: Davide Ponzini
 
-NAME=sqlcheck
+NAME=sqlchecker
 VENV=./venv
 REQUIREMENTS=requirements.txt
 
