@@ -2,7 +2,7 @@
 
 from typing import Callable
 from sqlglot import exp
-from sql_error_taxonomy import SqlErrors
+from sqlerrors import SqlErrors
 from sqlscope.catalog import ConstraintType, ConstraintColumn
 from sqlscope import Query
 from sqlscope import util

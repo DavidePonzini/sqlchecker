@@ -1,5 +1,5 @@
-from sql_error_categorizer.detectors import Detector
-from sql_error_categorizer import load_catalog, build_catalog_from_postgres, SyntaxErrorDetector, SemanticErrorDetector, LogicalErrorDetector, ComplicationDetector
+from sqlcheck.detectors import Detector
+from sqlcheck import load_catalog, build_catalog_from_postgres, SyntaxErrorDetector, SemanticErrorDetector, LogicalErrorDetector, ComplicationDetector
 
 def make_catalog(file: str) -> None:
     '''Utility function to build a catalog from a source file'''

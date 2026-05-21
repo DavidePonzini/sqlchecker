@@ -4,7 +4,7 @@ import re
 from typing import Callable
 from sqlglot import exp
 from z3 import Not, Or, And
-from sql_error_taxonomy import SqlErrors
+from sqlerrors import SqlErrors
 from sqlscope import util
 from sqlscope.query import Query, smt
 

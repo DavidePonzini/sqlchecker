@@ -4,7 +4,7 @@
 from .detectors import BaseDetector as _BaseDetector, Detector as _Detector
 
 # Public API
-from sql_error_taxonomy import SqlErrors
+from sqlerrors import SqlErrors
 from sqlscope import Catalog, build_catalog, load_catalog, build_catalog_from_postgres, build_catalog_from_sql
 from .detectors import SyntaxErrorDetector, SemanticErrorDetector, LogicalErrorDetector, ComplicationDetector, DetectedError
 

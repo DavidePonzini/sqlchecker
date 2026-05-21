@@ -1,7 +1,7 @@
 from typing import Any
-from sql_error_categorizer import SqlErrors, Catalog, load_catalog
-from sql_error_categorizer.detectors import Detector, BaseDetector, DetectedError
-from sql_error_categorizer import SyntaxErrorDetector, SemanticErrorDetector, LogicalErrorDetector, ComplicationDetector
+from sqlcheck import SqlErrors, Catalog, load_catalog
+from sqlcheck.detectors import Detector, BaseDetector, DetectedError
+from sqlcheck import SyntaxErrorDetector, SemanticErrorDetector, LogicalErrorDetector, ComplicationDetector
 
 def run_test(query: str, *,
              catalog_filename: str | None = None,

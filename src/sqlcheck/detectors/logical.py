@@ -2,7 +2,7 @@
 
 from dataclasses import dataclass
 from typing import Callable
-from sql_error_taxonomy import SqlErrors
+from sqlerrors import SqlErrors
 from sqlglot import exp
 
 from .base import BaseDetector, DetectedError

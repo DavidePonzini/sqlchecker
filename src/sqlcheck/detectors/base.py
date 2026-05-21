@@ -4,7 +4,7 @@ from abc import ABC, abstractmethod
 from dataclasses import dataclass, field
 from typing import Any, Callable
 
-from sql_error_taxonomy import SqlErrors
+from sqlerrors import SqlErrors
 from sqlscope.query import Query
 
 @dataclass(repr=False)

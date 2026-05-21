@@ -2,7 +2,7 @@
 # Type: PyPi
 # Author: Davide Ponzini
 
-NAME=sql_error_categorizer
+NAME=sqlcheck
 VENV=./venv
 REQUIREMENTS=requirements.txt
 
