@@ -26,6 +26,7 @@ def test_wrong(query, column, table_aliases, schema):
 @pytest.mark.parametrize('query,schema', [
     ('SELECT s.street FROM store s, customer c;', 'miedema'),
     ('SELECT s.* FROM store s, customer c;', 'miedema'),
+    ('select professori.cognome,professori.nome, count(studenti.matricola) from studenti right outer join professori on studenti.relatore=professori.id group by professori.cognome,professori.nome order by professori.cognome,professori.nome asc;', 'unicorsi'),
     # subqueries
     ('SELECT * FROM store s, customer c WHERE cid IN (SELECT s2.street FROM store s2, customer c2);', 'miedema'),
     # CTEs
