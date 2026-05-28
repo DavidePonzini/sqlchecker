@@ -736,11 +736,11 @@ class SyntaxErrorDetector(BaseDetector):
             alias: str
             is_aggregated: bool = False
 
-        def get_column_name(col: exp.Column | exp.Alias) -> ColumnInfo:
+        def get_column_name(col: exp.Column | exp.Alias, *, alias: str | None = None, is_aggregated: bool = False) -> ColumnInfo:
             '''Return normalized column name and alias. If no alias, both are the same.'''
             col_name = util.ast.column.get_real_name(col)
-            col_alias = util.ast.column.get_name(col)
-            return ColumnInfo(col_name, col_alias)
+            col_alias = alias if alias is not None else util.ast.column.get_name(col)
+            return ColumnInfo(col_name, col_alias, is_aggregated)
 
         results: list[DetectedError] = []
 
@@ -751,26 +751,39 @@ class SyntaxErrorDetector(BaseDetector):
             if not select.group_by:
                 continue    # no GROUP BY, skip
 
-            select_columns: list[ColumnInfo] = [] # we need a list for positional GROUP BY handling
+            select = select.strip_subqueries()   # we only care about the top-level SELECT for this check
 
-            # Gather non-aggregated columns from SELECT
-            for col in select.ast.expressions:
-                if isinstance(col, exp.Star):
+            select_columns: list[ColumnInfo] = [] # we need a list for positional GROUP BY handling
+            
+            import dav_tools
+            def parse_expression_for_columns(expr: exp.Expression, alias: str | None = None):
+                '''Recursively parse an expression to extract all column references, handling aliases and aggregate functions.'''
+                dav_tools.messages.debug(f"Parsing expression for columns: {expr.sql()} with alias {alias}")
+                
+                if isinstance(expr, exp.Star):
                     # SELECT * case: expand to all columns from all referenced tables
                     for table in select.referenced_tables:
                         for table_col in table.columns:
                             select_columns.append(ColumnInfo(table_col.name, table_col.name))
-                if isinstance(col, exp.Column) or isinstance(col, exp.Alias):
-                    col_name = get_column_name(col)
+                elif isinstance(expr, exp.Alias):
+                    return parse_expression_for_columns(expr.this, alias=util.ast.column.get_name(expr))
+                elif isinstance(expr, exp.Column):
+                    col_name = get_column_name(expr, alias=alias)
                     select_columns.append(col_name)
-                elif isinstance(col, exp.Func):
+                elif isinstance(expr, exp.AggFunc):
                     # aggregated, add the column but skip it later
-                    select_columns.append(ColumnInfo(col.sql(), col.sql(), is_aggregated=True))
+                    for c in expr.find_all(exp.Column):
+                        col_name = get_column_name(c, alias=alias, is_aggregated=True)
+                        select_columns.append(col_name)
                 else:
                     # Complex expression: try to extract columns
-                    for c in col.find_all(exp.Column):
-                        col_name = get_column_name(c)
+                    for c in expr.find_all(exp.Column):
+                        col_name = get_column_name(c, alias=alias)
                         select_columns.append(col_name)
+
+            # Gather non-aggregated columns from SELECT
+            for col in select.ast.expressions:
+                parse_expression_for_columns(col)
 
             # Gather columns from GROUP BY
             group_by_columns: set[ColumnInfo] = set()
@@ -787,7 +800,9 @@ class SyntaxErrorDetector(BaseDetector):
                     except ValueError:
                         continue
                 elif isinstance(gb, exp.AggFunc):
-                    group_by_columns.add(ColumnInfo(gb.sql(), gb.sql(), is_aggregated=True))
+                    for c in gb.find_all(exp.Column):
+                        gb_name = get_column_name(c, is_aggregated=True)
+                        group_by_columns.add(gb_name)
                 else:
                     # Complex expression in GROUP BY: try to extract columns
                     for c in gb.find_all(exp.Column):
