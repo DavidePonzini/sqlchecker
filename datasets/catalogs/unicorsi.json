@@ -1,0 +1,473 @@
+{
+  "version": 1,
+  "schemas": {
+    "unicorsi": {
+      "name": "unicorsi",
+      "tables": {
+        "corsi": {
+          "name": "corsi",
+          "unique_constraints": [
+            {
+              "columns": [
+                {
+                  "name": "denominazione",
+                  "table_idx": null
+                },
+                {
+                  "name": "corsodilaurea",
+                  "table_idx": null
+                }
+              ],
+              "is_pk": false
+            },
+            {
+              "columns": [
+                {
+                  "name": "id",
+                  "table_idx": null
+                }
+              ],
+              "is_pk": true
+            }
+          ],
+          "columns": [
+            {
+              "name": "corsodilaurea",
+              "column_type": "numeric",
+              "numeric_precision": 3,
+              "numeric_scale": 0,
+              "is_nullable": false,
+              "fk_schema": "unicorsi",
+              "fk_table": "corsidilaurea",
+              "fk_column": "id"
+            },
+            {
+              "name": "professore",
+              "column_type": "numeric",
+              "numeric_precision": 5,
+              "numeric_scale": 0,
+              "is_nullable": true,
+              "fk_schema": "unicorsi",
+              "fk_table": "professori",
+              "fk_column": "id"
+            },
+            {
+              "name": "denominazione",
+              "column_type": "character varying",
+              "numeric_precision": null,
+              "numeric_scale": null,
+              "is_nullable": false,
+              "fk_schema": null,
+              "fk_table": null,
+              "fk_column": null
+            },
+            {
+              "name": "id",
+              "column_type": "character",
+              "numeric_precision": null,
+              "numeric_scale": null,
+              "is_nullable": false,
+              "fk_schema": null,
+              "fk_table": null,
+              "fk_column": null
+            },
+            {
+              "name": "attivato",
+              "column_type": "boolean",
+              "numeric_precision": null,
+              "numeric_scale": null,
+              "is_nullable": false,
+              "fk_schema": null,
+              "fk_table": null,
+              "fk_column": null
+            }
+          ]
+        },
+        "studenti": {
+          "name": "studenti",
+          "unique_constraints": [
+            {
+              "columns": [
+                {
+                  "name": "corsodilaurea",
+                  "table_idx": null
+                },
+                {
+                  "name": "luogonascita",
+                  "table_idx": null
+                },
+                {
+                  "name": "nome",
+                  "table_idx": null
+                },
+                {
+                  "name": "cognome",
+                  "table_idx": null
+                },
+                {
+                  "name": "datanascita",
+                  "table_idx": null
+                }
+              ],
+              "is_pk": false
+            },
+            {
+              "columns": [
+                {
+                  "name": "matricola",
+                  "table_idx": null
+                }
+              ],
+              "is_pk": true
+            }
+          ],
+          "columns": [
+            {
+              "name": "corsodilaurea",
+              "column_type": "numeric",
+              "numeric_precision": 3,
+              "numeric_scale": 0,
+              "is_nullable": false,
+              "fk_schema": "unicorsi",
+              "fk_table": "corsidilaurea",
+              "fk_column": "id"
+            },
+            {
+              "name": "relatore",
+              "column_type": "numeric",
+              "numeric_precision": 5,
+              "numeric_scale": 0,
+              "is_nullable": true,
+              "fk_schema": "unicorsi",
+              "fk_table": "professori",
+              "fk_column": "id"
+            },
+            {
+              "name": "nome",
+              "column_type": "character varying",
+              "numeric_precision": null,
+              "numeric_scale": null,
+              "is_nullable": false,
+              "fk_schema": null,
+              "fk_table": null,
+              "fk_column": null
+            },
+            {
+              "name": "matricola",
+              "column_type": "character varying",
+              "numeric_precision": null,
+              "numeric_scale": null,
+              "is_nullable": false,
+              "fk_schema": null,
+              "fk_table": null,
+              "fk_column": null
+            },
+            {
+              "name": "luogonascita",
+              "column_type": "character varying",
+              "numeric_precision": null,
+              "numeric_scale": null,
+              "is_nullable": false,
+              "fk_schema": null,
+              "fk_table": null,
+              "fk_column": null
+            },
+            {
+              "name": "cognome",
+              "column_type": "character varying",
+              "numeric_precision": null,
+              "numeric_scale": null,
+              "is_nullable": false,
+              "fk_schema": null,
+              "fk_table": null,
+              "fk_column": null
+            },
+            {
+              "name": "residenza",
+              "column_type": "character varying",
+              "numeric_precision": null,
+              "numeric_scale": null,
+              "is_nullable": false,
+              "fk_schema": null,
+              "fk_table": null,
+              "fk_column": null
+            },
+            {
+              "name": "laurea",
+              "column_type": "date",
+              "numeric_precision": null,
+              "numeric_scale": null,
+              "is_nullable": true,
+              "fk_schema": null,
+              "fk_table": null,
+              "fk_column": null
+            },
+            {
+              "name": "iscrizione",
+              "column_type": "integer",
+              "numeric_precision": 32,
+              "numeric_scale": 0,
+              "is_nullable": false,
+              "fk_schema": null,
+              "fk_table": null,
+              "fk_column": null
+            },
+            {
+              "name": "datanascita",
+              "column_type": "date",
+              "numeric_precision": null,
+              "numeric_scale": null,
+              "is_nullable": false,
+              "fk_schema": null,
+              "fk_table": null,
+              "fk_column": null
+            }
+          ]
+        },
+        "esami": {
+          "name": "esami",
+          "unique_constraints": [
+            {
+              "columns": [
+                {
+                  "name": "studente",
+                  "table_idx": null
+                },
+                {
+                  "name": "corso",
+                  "table_idx": null
+                },
+                {
+                  "name": "data",
+                  "table_idx": null
+                }
+              ],
+              "is_pk": true
+            }
+          ],
+          "columns": [
+            {
+              "name": "studente",
+              "column_type": "character varying",
+              "numeric_precision": null,
+              "numeric_scale": null,
+              "is_nullable": false,
+              "fk_schema": "unicorsi",
+              "fk_table": "studenti",
+              "fk_column": "matricola"
+            },
+            {
+              "name": "corso",
+              "column_type": "character",
+              "numeric_precision": null,
+              "numeric_scale": null,
+              "is_nullable": false,
+              "fk_schema": "unicorsi",
+              "fk_table": "corsi",
+              "fk_column": "id"
+            },
+            {
+              "name": "data",
+              "column_type": "date",
+              "numeric_precision": null,
+              "numeric_scale": null,
+              "is_nullable": false,
+              "fk_schema": null,
+              "fk_table": null,
+              "fk_column": null
+            },
+            {
+              "name": "voto",
+              "column_type": "numeric",
+              "numeric_precision": 2,
+              "numeric_scale": 0,
+              "is_nullable": false,
+              "fk_schema": null,
+              "fk_table": null,
+              "fk_column": null
+            }
+          ]
+        },
+        "pianidistudio": {
+          "name": "pianidistudio",
+          "unique_constraints": [
+            {
+              "columns": [
+                {
+                  "name": "studente",
+                  "table_idx": null
+                },
+                {
+                  "name": "anno",
+                  "table_idx": null
+                },
+                {
+                  "name": "annoaccademico",
+                  "table_idx": null
+                }
+              ],
+              "is_pk": true
+            }
+          ],
+          "columns": [
+            {
+              "name": "studente",
+              "column_type": "character varying",
+              "numeric_precision": null,
+              "numeric_scale": null,
+              "is_nullable": false,
+              "fk_schema": "unicorsi",
+              "fk_table": "studenti",
+              "fk_column": "matricola"
+            },
+            {
+              "name": "anno",
+              "column_type": "numeric",
+              "numeric_precision": 1,
+              "numeric_scale": 0,
+              "is_nullable": false,
+              "fk_schema": null,
+              "fk_table": null,
+              "fk_column": null
+            },
+            {
+              "name": "annoaccademico",
+              "column_type": "integer",
+              "numeric_precision": 32,
+              "numeric_scale": 0,
+              "is_nullable": false,
+              "fk_schema": null,
+              "fk_table": null,
+              "fk_column": null
+            }
+          ]
+        },
+        "corsidilaurea": {
+          "name": "corsidilaurea",
+          "unique_constraints": [
+            {
+              "columns": [
+                {
+                  "name": "denominazione",
+                  "table_idx": null
+                },
+                {
+                  "name": "facolta",
+                  "table_idx": null
+                }
+              ],
+              "is_pk": false
+            },
+            {
+              "columns": [
+                {
+                  "name": "id",
+                  "table_idx": null
+                }
+              ],
+              "is_pk": true
+            }
+          ],
+          "columns": [
+            {
+              "name": "facolta",
+              "column_type": "character varying",
+              "numeric_precision": null,
+              "numeric_scale": null,
+              "is_nullable": false,
+              "fk_schema": null,
+              "fk_table": null,
+              "fk_column": null
+            },
+            {
+              "name": "attivazione",
+              "column_type": "character",
+              "numeric_precision": null,
+              "numeric_scale": null,
+              "is_nullable": false,
+              "fk_schema": null,
+              "fk_table": null,
+              "fk_column": null
+            },
+            {
+              "name": "denominazione",
+              "column_type": "character varying",
+              "numeric_precision": null,
+              "numeric_scale": null,
+              "is_nullable": false,
+              "fk_schema": null,
+              "fk_table": null,
+              "fk_column": null
+            },
+            {
+              "name": "id",
+              "column_type": "numeric",
+              "numeric_precision": 3,
+              "numeric_scale": 0,
+              "is_nullable": false,
+              "fk_schema": null,
+              "fk_table": null,
+              "fk_column": null
+            }
+          ]
+        },
+        "professori": {
+          "name": "professori",
+          "unique_constraints": [
+            {
+              "columns": [
+                {
+                  "name": "id",
+                  "table_idx": null
+                }
+              ],
+              "is_pk": true
+            }
+          ],
+          "columns": [
+            {
+              "name": "id",
+              "column_type": "numeric",
+              "numeric_precision": 5,
+              "numeric_scale": 0,
+              "is_nullable": false,
+              "fk_schema": null,
+              "fk_table": null,
+              "fk_column": null
+            },
+            {
+              "name": "stipendio",
+              "column_type": "numeric",
+              "numeric_precision": 8,
+              "numeric_scale": 2,
+              "is_nullable": false,
+              "fk_schema": null,
+              "fk_table": null,
+              "fk_column": null
+            },
+            {
+              "name": "cognome",
+              "column_type": "character varying",
+              "numeric_precision": null,
+              "numeric_scale": null,
+              "is_nullable": false,
+              "fk_schema": null,
+              "fk_table": null,
+              "fk_column": null
+            },
+            {
+              "name": "nome",
+              "column_type": "character varying",
+              "numeric_precision": null,
+              "numeric_scale": null,
+              "is_nullable": false,
+              "fk_schema": null,
+              "fk_table": null,
+              "fk_column": null
+            }
+          ]
+        }
+      }
+    }
+  }
+}
