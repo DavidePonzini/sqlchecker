@@ -25,6 +25,7 @@ def test_wrong(query, value, schema):
 
 @pytest.mark.parametrize('query,schema', [
     ('SELECT * FROM table WHERE id = 5;', None),
+    ('SELECT id::text FROM table WHERE id = 5;', None),
     ('SELECT * FROM table WHERE name = \'John\';', None),
     # subqueries
     ('SELECT * FROM table WHERE age > (SELECT MAX(age) FROM table);', None),

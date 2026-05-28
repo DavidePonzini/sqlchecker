@@ -296,7 +296,7 @@ class SyntaxErrorDetector(BaseDetector):
         results: list[DetectedError] = []
 
         for token, val in self.query.tokens:
-            if any(val.startswith(p) for p in (':', '@', '?')):
+            if any(val.startswith(p) for p in (':', '@', '?')) and val != '::':
                 results.append(DetectedError(SqlErrors.UNDEFINED_PARAMETER, (val,)))
 
         return results
