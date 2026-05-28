@@ -745,13 +745,13 @@ class SyntaxErrorDetector(BaseDetector):
         results: list[DetectedError] = []
 
         for select in self.query.selects:
+            select = select.strip_subqueries()   # we only care about the top-level SELECT for this check
+            
             if select.ast is None:
                 continue
 
             if not select.group_by:
                 continue    # no GROUP BY, skip
-
-            select = select.strip_subqueries()   # we only care about the top-level SELECT for this check
 
             select_columns: list[ColumnInfo] = [] # we need a list for positional GROUP BY handling
             
