@@ -693,7 +693,7 @@ class SyntaxErrorDetector(BaseDetector):
         for function, clause in functions:
             function_name = function.get_name()
             if function_name and function_name.upper() in {'SUM', 'AVG', 'COUNT', 'MIN', 'MAX'}:
-                if clause not in {'SELECT', 'HAVING'}:
+                if clause not in {'SELECT', 'HAVING', 'ORDER BY'}:   # allow ORDER BY as well, as some databases support aggregates there
                     results.append(DetectedError(SqlErrors.AGGREGATE_FUNCTION_OUTSIDE_SELECT_OR_HAVING, (function_name, clause)))
 
         return results

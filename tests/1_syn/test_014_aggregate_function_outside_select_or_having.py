@@ -6,12 +6,15 @@ ERROR = SqlErrors.AGGREGATE_FUNCTION_OUTSIDE_SELECT_OR_HAVING
 @pytest.mark.parametrize('query,errors', [
     ('SELECT * FROM orders WHERE SUM(amount) > 100;', [('SUM', 'WHERE')]),
     ('SELECT customer_id, SUM(amount) FROM orders GROUP BY SUM(amount);', [('SUM', 'GROUP BY')]),
-    ('SELECT customer_id, SUM(amount) FROM orders ORDER BY SUM(amount) DESC;', [('SUM', 'ORDER BY')]),
     # subqueries
-    ('SELECT customer_id, SUM(amount), AVG(amount) FROM orders WHERE SUM(amount) > 100 GROUP BY customer_id ORDER BY AVG(amount);', [('SUM', 'WHERE'), ('AVG', 'ORDER BY')]),
+    ('SELECT customer_id, SUM(amount), AVG(amount) FROM orders WHERE SUM(amount) > 100 GROUP BY customer_id ORDER BY AVG(amount);', [('SUM', 'WHERE')]),
     ('SELECT customer_id, COUNT(*) FROM orders WHERE customer_id > (SELECT MAX(customer_id) FROM customers) AND COUNT(*) > 10;', [('COUNT', 'WHERE')]),
     # CTEs
     ('WITH agg_cte AS (SELECT customer_id, SUM(amount) AS total_amount FROM orders WHERE SUM(amount) > 100 GROUP BY customer_id) SELECT * FROM agg_cte;', [('SUM', 'WHERE')]),
+
+    # removed: aggregation in ORDER BY is now allowed, as some databases support it
+    # ('SELECT customer_id, SUM(amount) FROM orders ORDER BY SUM(amount) DESC;', [('SUM', 'ORDER BY')]),
+    # ('SELECT customer_id, SUM(amount), AVG(amount) FROM orders WHERE SUM(amount) > 100 GROUP BY customer_id ORDER BY AVG(amount);', [('SUM', 'WHERE'), ('AVG', 'ORDER BY')]),
 ])
 def test_wrong(query, errors):
     detected_errors = run_test(
@@ -25,8 +28,10 @@ def test_wrong(query, errors):
 
 @pytest.mark.parametrize('query', [
     'SELECT customer_id, SUM(amount) FROM orders GROUP BY customer_id;',
+    'SELECT customer_id, SUM(amount) FROM orders ORDER BY SUM(amount) DESC;',
     'SELECT * FROM orders WHERE amount > 100;',
     'SELECT customer_id, SUM(amount) FROM orders GROUP BY customer_id HAVING SUM(amount) > 100;',
+    'select p.cognome, p.nome, count(*) from professori as p join corsi as c on c.professore=p.id group by p.id, p.cognome, p.nome having count(*)= (select count(*) from corsi as c join professori as p on p.id=c.professore group by p.id order by count(*) desc limit 1)',
     # subqueries
     'SELECT * FROM orders WHERE amount > (SELECT AVG(amount) FROM orders);',
     'SELECT customer_id, SUM(amount) FROM orders GROUP BY customer_id HAVING SUM(amount) > (SELECT AVG(amount) FROM orders);',
