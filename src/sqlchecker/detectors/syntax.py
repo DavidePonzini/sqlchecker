@@ -758,7 +758,6 @@ class SyntaxErrorDetector(BaseDetector):
             import dav_tools
             def parse_expression_for_columns(expr: exp.Expression, alias: str | None = None):
                 '''Recursively parse an expression to extract all column references, handling aliases and aggregate functions.'''
-                dav_tools.messages.debug(f"Parsing expression for columns: {expr.sql()} with alias {alias}")
                 
                 if isinstance(expr, exp.Star):
                     # SELECT * case: expand to all columns from all referenced tables
