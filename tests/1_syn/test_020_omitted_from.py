@@ -41,6 +41,11 @@ def test_wrong(query, errors):
 
 @pytest.mark.parametrize('query', [
     'SELECT 1 + 2',
+    'SELECT current_user',
+    'SELECT current_role',
+    'SELECT col1 FROM table1',
+    'SELECT 1 IN (SELECT col2 FROM table2)',
+    'SELECT NOW()',
 ])
 def test_correct(query):
     detected_errors = run_test(

@@ -871,8 +871,7 @@ class SyntaxErrorDetector(BaseDetector):
         '''
         Flags queries that omit the FROM clause entirely when it's required.
         A FROM clause is not required if:
-        - The query selects only constants/literals
-        - The query uses CTEs and references them implicitly
+        - The query selects only constants/literals/functions
         '''
         results: list[DetectedError] = []
 
@@ -888,11 +887,35 @@ class SyntaxErrorDetector(BaseDetector):
             if from_found:
                 continue    # valid, has FROM clause
 
-            # Check if selecting only constants/literals
-            for col in stripped.output.columns:
-                if not col.is_constant:
+            ast = stripped.ast
+            if ast is None:
+                continue    # no AST, can't check further
+
+            for col in ast.expressions:
+                for c in col.find_all(exp.Column):
+                    if util.ast.column.get_real_name(c).upper() in ('CURRENT_ROLE'):
+                        # valid functions not properly recognized by sqlglot
+                        continue
+                    
                     results.append(DetectedError(SqlErrors.OMITTED_FROM_CLAUSE, (select.sql,)))
-                    break
+                    break   # no need to check further columns, one is enough to flag the error
+
+                
+                # if isinstance(col, exp.Func):
+                #     if not col.find_all(exp.Column):
+                #         continue    # valid, has function without column references
+                # elif isinstance(col, exp.Literal):
+                #     continue    # valid, has literal
+                # elif isinstance(col, exp.Null):
+                #     continue    # valid, has NULL literal
+
+                # results.append(DetectedError(SqlErrors.OMITTED_FROM_CLAUSE, (select.sql,)))
+
+            # # Check if selecting only constants/literals/functions
+            # for col in stripped.output.columns:
+            #     if not col.is_constant:
+            #         results.append(DetectedError(SqlErrors.OMITTED_FROM_CLAUSE, (select.sql,)))
+            #         break
 
         return results
 
