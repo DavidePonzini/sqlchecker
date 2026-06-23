@@ -237,7 +237,7 @@ class SyntaxErrorDetector(BaseDetector):
                 column_name = util.ast.column.get_name(column)
                 table_name = util.ast.column.get_table(column)
 
-                possible_matches = []
+                possible_matches: list[str] = []
 
                 if table_name:
                     # Qualified column (table.column)
@@ -257,7 +257,20 @@ class SyntaxErrorDetector(BaseDetector):
 
                 if len(possible_matches) == 0:
                     results.append(DetectedError(SqlErrors.UNDEFINED_COLUMN, (column.sql(),)))
-                elif len(possible_matches) > 1:
+                    continue
+
+                # If the select is a subquery, we can check discard columns defined in the parent, since subquery tables have precedence over them
+                if select.parent_query is not None and table_name is None:
+                    # unqualified match in a subquery, we can ignore matches that belong to the parent query, since subquery tables have precedence over them
+                    parent_columns = set()
+                    for parent_select in select.parent_query.strip_subqueries().selects:
+                        for parent_table in parent_select.referenced_tables:
+                            for parent_column in parent_table.columns:
+                                parent_columns.add(f'{parent_table.name}.{parent_column.name}')
+
+                    possible_matches = [m for m in possible_matches if m not in parent_columns]
+
+                if len(possible_matches) > 1:
                     results.append(DetectedError(SqlErrors.AMBIGUOUS_COLUMN, (column.sql(), possible_matches)))
 
         return results
@@ -856,6 +869,8 @@ class SyntaxErrorDetector(BaseDetector):
 
             # By removing subqueries, we can check only the top-level WHERE clauses in this select.
             stripped = select.strip_subqueries()
+
+            # TODO: remove FILTER(WHERE ...) clauses from the count, as they are not top-level WHERE clauses
 
             where_count = 0
             for ttype, val in stripped.tokens:

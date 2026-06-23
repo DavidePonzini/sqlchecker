@@ -8,7 +8,7 @@ ERROR = SqlErrors.AMBIGUOUS_COLUMN
     ('SELECT street FROM store s, customer c;', 'street', ['s.street', 'c.street'], 'miedema'),
     ('SELECT s.street FROM store s, customer c WHERE street = c.street;', 'street', ['s.street', 'c.street'], 'miedema'),
     # subqueries
-    ('SELECT * FROM store s, customer c WHERE cid IN (SELECT street FROM store s2, customer c2);', 'street', ['s.street', 'c.street', 's2.street', 'c2.street'], 'miedema'),
+    ('SELECT * FROM store s, customer c WHERE cid IN (SELECT street FROM store s2, customer c2);', 'street', ['s2.street', 'c2.street'], 'miedema'),
     # CTEs
     ('WITH temp AS (SELECT street FROM store s, customer c) SELECT street FROM temp;', 'street', ['s.street', 'c.street'], 'miedema'),
 ])
@@ -27,6 +27,7 @@ def test_wrong(query, column, table_aliases, schema):
     ('SELECT s.street FROM store s, customer c;', 'miedema'),
     ('SELECT s.* FROM store s, customer c;', 'miedema'),
     ('select professori.cognome,professori.nome, count(studenti.matricola) from studenti right outer join professori on studenti.relatore=professori.id group by professori.cognome,professori.nome order by professori.cognome,professori.nome asc;', 'unicorsi'),
+    ("SELECT DISTINCT studente FROM Studenti s JOIN CorsiDiLaurea c ON s.corsodilaurea = c.id JOIN Esami e ON s.matricola = e.studente WHERE c.denominazione = 'Informatica' AND e.corso = 'bdd1n' AND e.voto >= 18 AND s.matricola NOT IN (SELECT studente FROM Esami WHERE corso = 'graf' AND voto >= 18 AND data >= '06/01/2010' AND Data <= '06/30/2010');", 'unicorsi'),
     # subqueries
     ('SELECT * FROM store s, customer c WHERE cid IN (SELECT s2.street FROM store s2, customer c2);', 'miedema'),
     # CTEs
