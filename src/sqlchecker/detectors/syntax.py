@@ -184,14 +184,17 @@ class SyntaxErrorDetector(BaseDetector):
         results: list[DetectedError] = []
 
         for select in self.query.selects:
-            select = select.strip_subqueries()
+            select_stripped = select.strip_subqueries()
 
-            if select.ast is None:
+            if select_stripped.ast is None:
                 continue
 
-            for table in select.ast.find_all(exp.Table):
+            for table in select_stripped.ast.find_all(exp.Table):
                 table_name = util.ast.table.get_real_name(table)
                 schema_name = util.ast.table.get_schema(table)
+
+                if table_name.startswith('__subq'):  # skip subqueries, they are not real tables
+                    continue
 
                 if schema_name:
                     # Fully qualified table (schema.table)
@@ -327,12 +330,12 @@ class SyntaxErrorDetector(BaseDetector):
         results: set[DetectedError] = set()     # use a set to avoid applying the same correction multiple times
 
         for select in self.query.selects:
-            select = select.strip_subqueries()
+            select_stripped = select.strip_subqueries()
 
-            if select.ast is None:
+            if select_stripped.ast is None:
                 continue
 
-            for table in select.ast.find_all(exp.Table):
+            for table in select_stripped.ast.find_all(exp.Table):
                 table = deepcopy(table)  # avoid modifying the original AST until we are sure we want to apply the correction
                 table_str = table.sql()
                 table_name = util.ast.table.get_real_name(table)
@@ -384,12 +387,12 @@ class SyntaxErrorDetector(BaseDetector):
         results: set[DetectedError] = set()    # use a set to avoid applying the same correction multiple times
 
         for select in self.query.selects:
-            select = select.strip_subqueries()
+            select_stripped = select.strip_subqueries()
 
-            if select.ast is None:
+            if select_stripped.ast is None:
                 continue
 
-            for column in select.ast.find_all(exp.Column):
+            for column in select_stripped.ast.find_all(exp.Column):
                 # skip `table.*` syntax, we only want to check actual column references
                 if isinstance(column.this, exp.Star):
                     continue
@@ -758,12 +761,12 @@ class SyntaxErrorDetector(BaseDetector):
         results: list[DetectedError] = []
 
         for select in self.query.selects:
-            select = select.strip_subqueries()   # we only care about the top-level SELECT for this check
+            select_stripped = select.strip_subqueries()   # we only care about the top-level SELECT for this check
             
-            if select.ast is None:
+            if select_stripped.ast is None:
                 continue
 
-            if not select.group_by:
+            if not select_stripped.group_by:
                 continue    # no GROUP BY, skip
 
             select_columns: list[ColumnInfo] = [] # we need a list for positional GROUP BY handling
@@ -794,12 +797,12 @@ class SyntaxErrorDetector(BaseDetector):
                         select_columns.append(col_name)
 
             # Gather non-aggregated columns from SELECT
-            for col in select.ast.expressions:
+            for col in select_stripped.ast.expressions:
                 parse_expression_for_columns(col)
 
             # Gather columns from GROUP BY
             group_by_columns: set[ColumnInfo] = set()
-            for gb in select.group_by:
+            for gb in select_stripped.group_by:
                 if isinstance(gb, exp.Column):
                     gb_name = get_column_name(gb)
                     group_by_columns.add(gb_name)
@@ -991,7 +994,7 @@ class SyntaxErrorDetector(BaseDetector):
 
         for select in self.query.selects:
             for subquery, clause, depth in select.subqueries:
-                if clause in ('FROM', 'EXISTS'):
+                if clause in ('FROM', 'EXISTS') or 'JOIN' in clause:
                     continue    # FROM/EXISTS subqueries can have any number of columns
                 
                 output_columns = len(subquery.output.columns)
