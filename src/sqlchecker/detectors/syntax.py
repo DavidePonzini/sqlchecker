@@ -287,6 +287,7 @@ class SyntaxErrorDetector(BaseDetector):
         known_aggregate_functions = {
             'SUM', 'AVG', 'COUNT', 'MIN', 'MAX',
             'IN', 'EXISTS', 'ANY', 'ALL',
+            'FILTER',
             'COALESCE', 'NULLIF', 'CAST', 'CONVERT',
             'UPPER', 'LOWER', 'LENGTH', 'SUBSTRING',
             'NOW', 'CURRENT_DATE', 'CURRENT_TIME', 'CURRENT_TIMESTAMP',

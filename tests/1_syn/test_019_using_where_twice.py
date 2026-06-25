@@ -6,6 +6,8 @@ ERROR = SqlErrors.USING_WHERE_TWICE
 
 @pytest.mark.parametrize('query', [
     'SELECT col1 WHERE col2 = 1',
+    'SELECT col1, (SELECT col2 WHERE col3 = 1) as subquery_col FROM table1 WHERE col4 = 2',
+    'SELECT col1, COUNT(col2) FILTER (WHERE col3 = 1) as count_col FROM table1 WHERE col4 = 2',
 ])
 def test_correct(query):
     detected_errors = run_test(

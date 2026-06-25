@@ -30,6 +30,7 @@ def test_wrong(query, func, clause, schema):
     ('SELECT cid FROM customer WHERE LENGTH(cname) > 5;', None),
     ('SELECT cid FROM customer GROUP BY cid HAVING COUNT(order_id) > 2;', None),
     ('SELECT NOW();', None),
+    ('SELECT col1, COUNT(col2) FILTER (WHERE col3 = 1) as count_col FROM table1 WHERE col4 = 2', None),
     # subqueries
     ('SELECT * FROM store WHERE sid >= (SELECT MAX(col1) FROM store);', None),
     # CTEs

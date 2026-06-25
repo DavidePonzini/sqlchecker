@@ -6,6 +6,7 @@ ERROR = SqlErrors.CONFUSED_ORDER_OF_KEYWORDS
 
 @pytest.mark.parametrize('query', [
     'SELECT col1 FROM table1 WHERE col2 = 10 GROUP BY col1 HAVING COUNT(col2) > 5 ORDER BY col1 LIMIT 10 OFFSET 5',
+    'SELECT col1, COUNT(col2) FILTER (WHERE col3 = 1) as count_col FROM table1 WHERE col4 = 2',
 ])
 def test_correct(query):
     detected_errors = run_test(
