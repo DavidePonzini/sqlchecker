@@ -224,12 +224,12 @@ class SyntaxErrorDetector(BaseDetector):
         results: list[DetectedError] = []
 
         for select in self.query.selects:
-            select = select.strip_subqueries()
+            select_stripped = select.strip_subqueries()
 
-            if select.ast is None:
+            if select_stripped.ast is None:
                 continue
 
-            for column in select.ast.find_all(exp.Column):
+            for column in select_stripped.ast.find_all(exp.Column):
                 # skip `table.*` syntax, we only want to check actual column references
                 if isinstance(column.this, exp.Star):
                     continue
@@ -260,10 +260,10 @@ class SyntaxErrorDetector(BaseDetector):
                     continue
 
                 # If the select is a subquery, we can discard columns defined in the parent, since the subquery tables have precedence over them
-                if select.parent_query is not None and table_name is None:
+                if select_stripped.parent_query is not None and table_name is None:
                     # unqualified match in a subquery, we can ignore matches that belong to the parent query, since subquery tables have precedence over them
                     parent_columns = set()
-                    for parent_select in select.parent_query.strip_subqueries().selects:
+                    for parent_select in select_stripped.parent_query.strip_subqueries().selects:
                         for parent_table in parent_select.referenced_tables:
                             for parent_column in parent_table.columns:
                                 parent_columns.add(f'{parent_table.name}.{parent_column.name}')

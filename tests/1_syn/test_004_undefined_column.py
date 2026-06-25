@@ -10,6 +10,7 @@ ERROR = SqlErrors.UNDEFINED_COLUMN
     ('SELECT sid FROM store WHRE sid > ALL(SELECT customer_id FROM customer);', 'customer_id', 'miedema'),
     ('SELECT sid FROM store WHERE sid IN (SELECT customer_id FROM customer);', 'customer_id', 'miedema'),
     ('SELECT sid FROM store WHERE sid > ALL(SELECT customer_id FROM customer);', 'customer_id', 'miedema'),
+    
     # CTEs
     ('WITH temp AS (SELECT store_id FROM store) SELECT * FROM temp;', 'store_id', 'miedema'),
     ('WITH temp AS (SELECT sid FROM store) SELECT store_id FROM temp;', 'store_id', 'miedema'),
@@ -31,6 +32,27 @@ def test_wrong(query, column, schema):
     ('SELECT sid FROM store WHERE street = \'Eindhoven\';', 'miedema'),
     # subqueries
     ('SELECT sid FROM store WHERE sid > ALL(SELECT cid FROM customer);', 'miedema'),
+    ('''SELECT customers.full_name,
+            loan_totals.total_loan_amount,
+            account_totals.total_balance
+    FROM customers
+    JOIN (
+        SELECT borrower_id, SUM(amount) AS total_loan_amount
+        FROM loans
+        GROUP BY borrower_id
+    ) AS loan_totals
+    ON loan_totals.borrower_id = customers.cust_id
+    JOIN (
+        SELECT ref_customer, SUM(balance) AS total_balance
+        FROM accounts
+        GROUP BY ref_customer
+    ) AS account_totals
+    ON account_totals.ref_customer = customers.cust_id
+    WHERE loan_totals.total_loan_amount > 5000
+    AND account_totals.total_balance > (
+        SELECT AVG(balance)
+        FROM accounts
+    );''', 'gen1'),
     # CTEs
     ('WITH temp AS (SELECT sname as name FROM store) SELECT name FROM temp;', 'miedema'),
 ])

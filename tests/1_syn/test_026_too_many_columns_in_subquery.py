@@ -28,11 +28,11 @@ def test_wrong(query, subquery):
     assert has_error(detected_errors, ERROR, (subquery, 1))
 
 
-@pytest.mark.parametrize('query', [
-    'SELECT col1 FROM main WHERE EXISTS (SELECT col2, col3 FROM subq)',
-    'SELECT col1 FROM main WHERE col2 = (SELECT col3 FROM subq)',
-    'SELECT col1 FROM (SELECT col2, col3 FROM subq) AS subquery_alias',
-    '''SELECT customers.full_name,
+@pytest.mark.parametrize('query,schema', [
+    ('SELECT col1 FROM main WHERE EXISTS (SELECT col2, col3 FROM subq)', 'gen1'),
+    ('SELECT col1 FROM main WHERE col2 = (SELECT col3 FROM subq)', 'gen1'),
+    ('SELECT col1 FROM (SELECT col2, col3 FROM subq) AS subquery_alias', 'gen1'),
+    ('''SELECT customers.full_name,
             loan_totals.total_loan_amount,
             account_totals.total_balance
     FROM customers
@@ -52,12 +52,14 @@ def test_wrong(query, subquery):
     AND account_totals.total_balance > (
         SELECT AVG(balance)
         FROM accounts
-    );''',
+    );''','gen1'),
 ])
-def test_correct(query):
+def test_correct(query, schema):
     detected_errors = run_test(
         query=query,
         detectors=[SyntaxErrorDetector],
+        search_path=schema,
+        catalog_filename=schema,
     )
 
     assert count_errors(detected_errors, ERROR) == 0
