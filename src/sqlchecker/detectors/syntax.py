@@ -259,7 +259,7 @@ class SyntaxErrorDetector(BaseDetector):
                     results.append(DetectedError(SqlErrors.UNDEFINED_COLUMN, (column.sql(),)))
                     continue
 
-                # If the select is a subquery, we can check discard columns defined in the parent, since subquery tables have precedence over them
+                # If the select is a subquery, we can discard columns defined in the parent, since the subquery tables have precedence over them
                 if select.parent_query is not None and table_name is None:
                     # unqualified match in a subquery, we can ignore matches that belong to the parent query, since subquery tables have precedence over them
                     parent_columns = set()
