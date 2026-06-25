@@ -32,6 +32,27 @@ def test_wrong(query, subquery):
     'SELECT col1 FROM main WHERE EXISTS (SELECT col2, col3 FROM subq)',
     'SELECT col1 FROM main WHERE col2 = (SELECT col3 FROM subq)',
     'SELECT col1 FROM (SELECT col2, col3 FROM subq) AS subquery_alias',
+    '''SELECT customers.full_name,
+            loan_totals.total_loan_amount,
+            account_totals.total_balance
+    FROM customers
+    JOIN (
+        SELECT borrower_id, SUM(amount) AS total_loan_amount
+        FROM loans
+        GROUP BY borrower_id
+    ) AS loan_totals
+    ON loan_totals.borrower_id = customers.cust_id
+    JOIN (
+        SELECT ref_customer, SUM(balance) AS total_balance
+        FROM accounts
+        GROUP BY ref_customer
+    ) AS account_totals
+    ON account_totals.ref_customer = customers.cust_id
+    WHERE loan_totals.total_loan_amount > 5000
+    AND account_totals.total_balance > (
+        SELECT AVG(balance)
+        FROM accounts
+    );''',
 ])
 def test_correct(query):
     detected_errors = run_test(

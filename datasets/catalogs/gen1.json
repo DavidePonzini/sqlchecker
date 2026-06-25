@@ -1,0 +1,473 @@
+{
+  "version": 1,
+  "schemas": {
+    "gen1": {
+      "name": "gen1",
+      "tables": {
+        "accounts": {
+          "name": "accounts",
+          "unique_constraints": [
+            {
+              "columns": [
+                {
+                  "name": "acc_key",
+                  "table_idx": null
+                }
+              ],
+              "is_pk": true
+            }
+          ],
+          "columns": [
+            {
+              "name": "ref_customer",
+              "column_type": "integer",
+              "numeric_precision": 32,
+              "numeric_scale": 0,
+              "is_nullable": true,
+              "fk_schema": "gen1",
+              "fk_table": "customers",
+              "fk_column": "cust_id"
+            },
+            {
+              "name": "currency_key",
+              "column_type": "integer",
+              "numeric_precision": 32,
+              "numeric_scale": 0,
+              "is_nullable": true,
+              "fk_schema": "gen1",
+              "fk_table": "currencies",
+              "fk_column": "curr_id"
+            },
+            {
+              "name": "balance",
+              "column_type": "numeric",
+              "numeric_precision": null,
+              "numeric_scale": null,
+              "is_nullable": true,
+              "fk_schema": null,
+              "fk_table": null,
+              "fk_column": null
+            },
+            {
+              "name": "owner_name",
+              "column_type": "character varying",
+              "numeric_precision": null,
+              "numeric_scale": null,
+              "is_nullable": true,
+              "fk_schema": null,
+              "fk_table": null,
+              "fk_column": null
+            },
+            {
+              "name": "acc_type",
+              "column_type": "character varying",
+              "numeric_precision": null,
+              "numeric_scale": null,
+              "is_nullable": true,
+              "fk_schema": null,
+              "fk_table": null,
+              "fk_column": null
+            },
+            {
+              "name": "acc_key",
+              "column_type": "integer",
+              "numeric_precision": 32,
+              "numeric_scale": 0,
+              "is_nullable": false,
+              "fk_schema": null,
+              "fk_table": null,
+              "fk_column": null
+            }
+          ]
+        },
+        "transactions": {
+          "name": "transactions",
+          "unique_constraints": [
+            {
+              "columns": [
+                {
+                  "name": "trans_key",
+                  "table_idx": null
+                }
+              ],
+              "is_pk": true
+            }
+          ],
+          "columns": [
+            {
+              "name": "related_account",
+              "column_type": "integer",
+              "numeric_precision": 32,
+              "numeric_scale": 0,
+              "is_nullable": true,
+              "fk_schema": "gen1",
+              "fk_table": "accounts",
+              "fk_column": "acc_key"
+            },
+            {
+              "name": "transaction_date",
+              "column_type": "timestamp without time zone",
+              "numeric_precision": null,
+              "numeric_scale": null,
+              "is_nullable": true,
+              "fk_schema": null,
+              "fk_table": null,
+              "fk_column": null
+            },
+            {
+              "name": "category",
+              "column_type": "character varying",
+              "numeric_precision": null,
+              "numeric_scale": null,
+              "is_nullable": true,
+              "fk_schema": null,
+              "fk_table": null,
+              "fk_column": null
+            },
+            {
+              "name": "description",
+              "column_type": "character varying",
+              "numeric_precision": null,
+              "numeric_scale": null,
+              "is_nullable": true,
+              "fk_schema": null,
+              "fk_table": null,
+              "fk_column": null
+            },
+            {
+              "name": "amount",
+              "column_type": "numeric",
+              "numeric_precision": null,
+              "numeric_scale": null,
+              "is_nullable": true,
+              "fk_schema": null,
+              "fk_table": null,
+              "fk_column": null
+            },
+            {
+              "name": "trans_key",
+              "column_type": "integer",
+              "numeric_precision": 32,
+              "numeric_scale": 0,
+              "is_nullable": false,
+              "fk_schema": null,
+              "fk_table": null,
+              "fk_column": null
+            }
+          ]
+        },
+        "branches": {
+          "name": "branches",
+          "unique_constraints": [
+            {
+              "columns": [
+                {
+                  "name": "identifier",
+                  "table_idx": null
+                }
+              ],
+              "is_pk": false
+            },
+            {
+              "columns": [
+                {
+                  "name": "branch_id",
+                  "table_idx": null
+                }
+              ],
+              "is_pk": true
+            }
+          ],
+          "columns": [
+            {
+              "name": "owner_id",
+              "column_type": "integer",
+              "numeric_precision": 32,
+              "numeric_scale": 0,
+              "is_nullable": true,
+              "fk_schema": "gen1",
+              "fk_table": "customers",
+              "fk_column": "cust_id"
+            },
+            {
+              "name": "manager",
+              "column_type": "character varying",
+              "numeric_precision": null,
+              "numeric_scale": null,
+              "is_nullable": true,
+              "fk_schema": null,
+              "fk_table": null,
+              "fk_column": null
+            },
+            {
+              "name": "identifier",
+              "column_type": "character varying",
+              "numeric_precision": null,
+              "numeric_scale": null,
+              "is_nullable": true,
+              "fk_schema": null,
+              "fk_table": null,
+              "fk_column": null
+            },
+            {
+              "name": "city",
+              "column_type": "character varying",
+              "numeric_precision": null,
+              "numeric_scale": null,
+              "is_nullable": true,
+              "fk_schema": null,
+              "fk_table": null,
+              "fk_column": null
+            },
+            {
+              "name": "title",
+              "column_type": "character varying",
+              "numeric_precision": null,
+              "numeric_scale": null,
+              "is_nullable": true,
+              "fk_schema": null,
+              "fk_table": null,
+              "fk_column": null
+            },
+            {
+              "name": "branch_id",
+              "column_type": "integer",
+              "numeric_precision": 32,
+              "numeric_scale": 0,
+              "is_nullable": false,
+              "fk_schema": null,
+              "fk_table": null,
+              "fk_column": null
+            }
+          ]
+        },
+        "loans": {
+          "name": "loans",
+          "unique_constraints": [
+            {
+              "columns": [
+                {
+                  "name": "loan_key",
+                  "table_idx": null
+                }
+              ],
+              "is_pk": true
+            }
+          ],
+          "columns": [
+            {
+              "name": "borrower_id",
+              "column_type": "integer",
+              "numeric_precision": 32,
+              "numeric_scale": 0,
+              "is_nullable": true,
+              "fk_schema": "gen1",
+              "fk_table": "customers",
+              "fk_column": "cust_id"
+            },
+            {
+              "name": "amount",
+              "column_type": "numeric",
+              "numeric_precision": null,
+              "numeric_scale": null,
+              "is_nullable": true,
+              "fk_schema": null,
+              "fk_table": null,
+              "fk_column": null
+            },
+            {
+              "name": "interest_rate",
+              "column_type": "numeric",
+              "numeric_precision": null,
+              "numeric_scale": null,
+              "is_nullable": true,
+              "fk_schema": null,
+              "fk_table": null,
+              "fk_column": null
+            },
+            {
+              "name": "type",
+              "column_type": "character varying",
+              "numeric_precision": null,
+              "numeric_scale": null,
+              "is_nullable": true,
+              "fk_schema": null,
+              "fk_table": null,
+              "fk_column": null
+            },
+            {
+              "name": "loan_key",
+              "column_type": "integer",
+              "numeric_precision": 32,
+              "numeric_scale": 0,
+              "is_nullable": false,
+              "fk_schema": null,
+              "fk_table": null,
+              "fk_column": null
+            }
+          ]
+        },
+        "customers": {
+          "name": "customers",
+          "unique_constraints": [
+            {
+              "columns": [
+                {
+                  "name": "identifier",
+                  "table_idx": null
+                }
+              ],
+              "is_pk": false
+            },
+            {
+              "columns": [
+                {
+                  "name": "cust_id",
+                  "table_idx": null
+                }
+              ],
+              "is_pk": true
+            }
+          ],
+          "columns": [
+            {
+              "name": "points",
+              "column_type": "numeric",
+              "numeric_precision": null,
+              "numeric_scale": null,
+              "is_nullable": true,
+              "fk_schema": null,
+              "fk_table": null,
+              "fk_column": null
+            },
+            {
+              "name": "address",
+              "column_type": "character varying",
+              "numeric_precision": null,
+              "numeric_scale": null,
+              "is_nullable": true,
+              "fk_schema": null,
+              "fk_table": null,
+              "fk_column": null
+            },
+            {
+              "name": "full_name",
+              "column_type": "character varying",
+              "numeric_precision": null,
+              "numeric_scale": null,
+              "is_nullable": true,
+              "fk_schema": null,
+              "fk_table": null,
+              "fk_column": null
+            },
+            {
+              "name": "cust_id",
+              "column_type": "integer",
+              "numeric_precision": 32,
+              "numeric_scale": 0,
+              "is_nullable": false,
+              "fk_schema": null,
+              "fk_table": null,
+              "fk_column": null
+            },
+            {
+              "name": "balance",
+              "column_type": "numeric",
+              "numeric_precision": null,
+              "numeric_scale": null,
+              "is_nullable": true,
+              "fk_schema": null,
+              "fk_table": null,
+              "fk_column": null
+            },
+            {
+              "name": "identifier",
+              "column_type": "character varying",
+              "numeric_precision": null,
+              "numeric_scale": null,
+              "is_nullable": true,
+              "fk_schema": null,
+              "fk_table": null,
+              "fk_column": null
+            }
+          ]
+        },
+        "currencies": {
+          "name": "currencies",
+          "unique_constraints": [
+            {
+              "columns": [
+                {
+                  "name": "code",
+                  "table_idx": null
+                }
+              ],
+              "is_pk": false
+            },
+            {
+              "columns": [
+                {
+                  "name": "curr_id",
+                  "table_idx": null
+                }
+              ],
+              "is_pk": true
+            }
+          ],
+          "columns": [
+            {
+              "name": "is_active",
+              "column_type": "boolean",
+              "numeric_precision": null,
+              "numeric_scale": null,
+              "is_nullable": true,
+              "fk_schema": null,
+              "fk_table": null,
+              "fk_column": null
+            },
+            {
+              "name": "name",
+              "column_type": "character varying",
+              "numeric_precision": null,
+              "numeric_scale": null,
+              "is_nullable": true,
+              "fk_schema": null,
+              "fk_table": null,
+              "fk_column": null
+            },
+            {
+              "name": "exchange_rate",
+              "column_type": "numeric",
+              "numeric_precision": null,
+              "numeric_scale": null,
+              "is_nullable": true,
+              "fk_schema": null,
+              "fk_table": null,
+              "fk_column": null
+            },
+            {
+              "name": "code",
+              "column_type": "character varying",
+              "numeric_precision": null,
+              "numeric_scale": null,
+              "is_nullable": true,
+              "fk_schema": null,
+              "fk_table": null,
+              "fk_column": null
+            },
+            {
+              "name": "curr_id",
+              "column_type": "integer",
+              "numeric_precision": 32,
+              "numeric_scale": 0,
+              "is_nullable": false,
+              "fk_schema": null,
+              "fk_table": null,
+              "fk_column": null
+            }
+          ]
+        }
+      }
+    }
+  }
+}

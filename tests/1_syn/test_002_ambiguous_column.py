@@ -30,6 +30,27 @@ def test_wrong(query, column, table_aliases, schema):
     ("SELECT DISTINCT studente FROM Studenti s JOIN CorsiDiLaurea c ON s.corsodilaurea = c.id JOIN Esami e ON s.matricola = e.studente WHERE c.denominazione = 'Informatica' AND e.corso = 'bdd1n' AND e.voto >= 18 AND s.matricola NOT IN (SELECT studente FROM Esami WHERE corso = 'graf' AND voto >= 18 AND data >= '06/01/2010' AND Data <= '06/30/2010');", 'unicorsi'),
     # subqueries
     ('SELECT * FROM store s, customer c WHERE cid IN (SELECT s2.street FROM store s2, customer c2);', 'miedema'),
+    ('''SELECT customers.full_name,
+            loan_totals.total_loan_amount,
+            account_totals.total_balance
+    FROM customers
+    JOIN (
+        SELECT borrower_id, SUM(amount) AS total_loan_amount
+        FROM loans
+        GROUP BY borrower_id
+    ) AS loan_totals
+    ON loan_totals.borrower_id = customers.cust_id
+    JOIN (
+        SELECT ref_customer, SUM(balance) AS total_balance
+        FROM accounts
+        GROUP BY ref_customer
+    ) AS account_totals
+    ON account_totals.ref_customer = customers.cust_id
+    WHERE loan_totals.total_loan_amount > 5000
+    AND account_totals.total_balance > (
+        SELECT AVG(balance)
+        FROM accounts
+    );''', 'gen1'),
     # CTEs
     ('WITH temp AS (SELECT s.street FROM store s, customer c) SELECT street FROM temp;', 'miedema'),
 ])

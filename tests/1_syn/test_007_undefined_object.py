@@ -29,6 +29,27 @@ def test_wrong(query, objects, schema):
     ('SELECT * FROM customer c JOIN store s ON c.cid = s.sid;', 'miedema'),
     # subqueries
     ('SELECT * FROM customer c WHERE c.sid IN (SELECT sid FROM store);', 'miedema'),
+    ('''SELECT customers.full_name,
+            loan_totals.total_loan_amount,
+            account_totals.total_balance
+    FROM customers
+    JOIN (
+        SELECT borrower_id, SUM(amount) AS total_loan_amount
+        FROM loans
+        GROUP BY borrower_id
+    ) AS loan_totals
+    ON loan_totals.borrower_id = customers.cust_id
+    JOIN (
+        SELECT ref_customer, SUM(balance) AS total_balance
+        FROM accounts
+        GROUP BY ref_customer
+    ) AS account_totals
+    ON account_totals.ref_customer = customers.cust_id
+    WHERE loan_totals.total_loan_amount > 5000
+    AND account_totals.total_balance > (
+        SELECT AVG(balance)
+        FROM accounts
+    );''', 'gen1'),
     # CTEs
     ('WITH temp AS (SELECT * FROM store) SELECT * FROM temp;', 'miedema'),
 ])
