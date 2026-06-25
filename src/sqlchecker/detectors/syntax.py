@@ -872,7 +872,7 @@ class SyntaxErrorDetector(BaseDetector):
         for select in self.query.selects:
 
             # By removing subqueries, we can check only the top-level WHERE clauses in this select.
-            stripped = select.strip_subqueries()
+            stripped = select.strip_subqueries().strip_filters()
 
             # TODO: remove FILTER(WHERE ...) clauses from the count, as they are not top-level WHERE clauses
 
@@ -970,7 +970,7 @@ class SyntaxErrorDetector(BaseDetector):
         clause_keywords = {'SELECT', 'FROM', 'WHERE', 'GROUP BY', 'HAVING', 'ORDER BY', 'LIMIT', 'OFFSET'}
         
         for select in self.query.selects:
-            stripped = select.strip_subqueries()
+            stripped = select.strip_subqueries().strip_filters()
 
             clause_count = {}
             for ttype, val in stripped.tokens:
@@ -1016,7 +1016,7 @@ class SyntaxErrorDetector(BaseDetector):
         results: list[DetectedError] = []
 
         for select in self.query.selects:
-            stripped = select.strip_subqueries()
+            stripped = select.strip_subqueries().strip_filters()
 
             expected_order = ['SELECT', 'FROM', 'WHERE', 'GROUP BY', 'HAVING', 'ORDER BY', 'LIMIT', 'OFFSET']
             actual_order: list[str] = []
