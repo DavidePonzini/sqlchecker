@@ -9,9 +9,10 @@ from sqlscope.query import Query
 
 @dataclass(repr=False)
 class DetectedError:
-    '''Represents a detected SQL error with its type and associated data.'''
+    '''A detected SQL error with a required plain-language explanation.'''
 
     error: SqlErrors
+    message: str = field(compare=False)
     data: tuple[Any, ...] = field(default_factory=tuple)
 
     def __repr__(self):

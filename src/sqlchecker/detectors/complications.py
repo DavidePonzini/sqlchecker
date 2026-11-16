@@ -83,7 +83,11 @@ class ComplicationDetector(BaseDetector):
             constraints = [c for c in select.output.unique_constraints if c.constraint_type != ConstraintType.DISTINCT]
 
             if len(constraints) > 0:
-                result.append(DetectedError(SqlErrors.UNNECESSARY_DISTINCT_IN_SELECT_CLAUSE, (select.sql,)))
+                result.append(DetectedError(
+                    SqlErrors.UNNECESSARY_DISTINCT_IN_SELECT_CLAUSE,
+                    data=(select.sql,),
+                    message=f'The query {select.sql} already returns unique rows, so DISTINCT does not change its result.',
+                ))
 
         return result
 
@@ -158,7 +162,11 @@ class ComplicationDetector(BaseDetector):
                 if '%' not in pattern_value and '_' not in pattern_value:
                     full_expression = str(like)
 
-                    results.append(DetectedError(SqlErrors.LIKE_WITHOUT_WILDCARDS, (full_expression,)))
+                    results.append(DetectedError(
+                        SqlErrors.LIKE_WITHOUT_WILDCARDS,
+                        data=(full_expression,),
+                        message=f'The expression {full_expression} uses LIKE without wildcards, so it matches a complete value rather than a text pattern.',
+                    ))
 
         return results
     
@@ -187,7 +195,11 @@ class ComplicationDetector(BaseDetector):
                     continue
 
                 if isinstance(agg_func, (exp.Min, exp.Max)):
-                    results.append(DetectedError(SqlErrors.UNNECESSARY_DISTINCT_IN_AGGREGATE_FUNCTION, (str(agg_func),)))
+                    results.append(DetectedError(
+                        SqlErrors.UNNECESSARY_DISTINCT_IN_AGGREGATE_FUNCTION,
+                        data=(str(agg_func),),
+                        message=f'DISTINCT in {str(agg_func)} is redundant because it does not change the aggregate result.',
+                    ))
                     continue
 
                 arg_expr = agg_func.this.expressions   # `.this` is the DISTINCT, `.expressions` are the arguments
@@ -197,7 +209,11 @@ class ComplicationDetector(BaseDetector):
                 for expr in arg_expr:
                     # Check if the argument is a constant literal
                     if isinstance(expr, exp.Literal):
-                        results.append(DetectedError(SqlErrors.UNNECESSARY_DISTINCT_IN_AGGREGATE_FUNCTION, (str(agg_func),)))
+                        results.append(DetectedError(
+                            SqlErrors.UNNECESSARY_DISTINCT_IN_AGGREGATE_FUNCTION,
+                            data=(str(agg_func),),
+                            message=f'DISTINCT in {str(agg_func)} is redundant because it does not change the aggregate result.',
+                        ))
                         continue
 
                     # Check if the argument is a column
@@ -208,7 +224,11 @@ class ComplicationDetector(BaseDetector):
                         unique_constraints = [c for c in select.all_constraints if c.constraint_type == ConstraintType.UNIQUE]
                         for constraint in unique_constraints:
                             if { ConstraintColumn(column_name, table_idx=select.get_table_idx_for_column(expr)) } == constraint.columns:
-                                results.append(DetectedError(SqlErrors.UNNECESSARY_DISTINCT_IN_AGGREGATE_FUNCTION, (str(agg_func),)))
+                                results.append(DetectedError(
+                                    SqlErrors.UNNECESSARY_DISTINCT_IN_AGGREGATE_FUNCTION,
+                                    data=(str(agg_func),),
+                                    message=f'DISTINCT in {str(agg_func)} is redundant because it does not change the aggregate result.',
+                                ))
                                 break
         return results
     
@@ -238,7 +258,11 @@ class ComplicationDetector(BaseDetector):
 
             for constraint in constraints:
                 if constraint.columns.issubset(group_by_constraint.columns):
-                    results.append(DetectedError(SqlErrors.GROUP_BY_WITH_SINGLETON_GROUPS, (group_by_constraint, constraint)))
+                    results.append(DetectedError(
+                        SqlErrors.GROUP_BY_WITH_SINGLETON_GROUPS,
+                        data=(group_by_constraint, constraint),
+                        message=f'The grouping columns {group_by_constraint} include the unique columns {constraint}, so each group contains only one row.',
+                    ))
                     break        
 
         return results
@@ -286,7 +310,11 @@ class ComplicationDetector(BaseDetector):
             group_by_col_names = {(util.ast.column.get_real_name(col), select.get_table_idx_for_column(col)) for col in group_by_columns}
 
             if select_col_names == group_by_col_names:
-                results.append(DetectedError(SqlErrors.GROUP_BY_CAN_BE_REPLACED_WITH_DISTINCT, (select_col_names,)))
+                results.append(DetectedError(
+                    SqlErrors.GROUP_BY_CAN_BE_REPLACED_WITH_DISTINCT,
+                    data=(select_col_names,),
+                    message=f'GROUP BY lists the selected columns {select_col_names} without any aggregate functions; DISTINCT can remove the same duplicate rows more simply.',
+                ))
 
         return results
                         
@@ -339,7 +367,11 @@ class ComplicationDetector(BaseDetector):
 
                 checked_subqueries.add(subquery.sql)
                 if subquery.order_by and not subquery.limit:
-                    results.append(DetectedError(SqlErrors.ORDER_BY_IN_SUBQUERY, (subquery.sql,)))
+                    results.append(DetectedError(
+                        SqlErrors.ORDER_BY_IN_SUBQUERY,
+                        data=(subquery.sql,),
+                        message=f'ORDER BY inside the subquery {subquery.sql} does not affect the final result in this context, so this sorting is unnecessary.',
+                    ))
 
         return results
     
@@ -370,6 +402,10 @@ class ComplicationDetector(BaseDetector):
 
         for cte_idx, used in used_ctes.items():
             if not used:
-                results.append(DetectedError(SqlErrors.UNUSED_CTE, (self.query.ctes[cte_idx].sql,)))
+                results.append(DetectedError(
+                    SqlErrors.UNUSED_CTE,
+                    data=(self.query.ctes[cte_idx].sql,),
+                    message=f'The named query {self.query.ctes[cte_idx].sql} is defined with WITH but never used by the rest of the query.',
+                ))
 
         return results

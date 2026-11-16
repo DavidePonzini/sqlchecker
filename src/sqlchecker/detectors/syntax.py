@@ -191,7 +191,10 @@ class SyntaxErrorDetector(BaseDetector):
             if is_semicolon(token):
                 # semicolon in nested query, definetely wrong!
                 if depth > 0:
-                    results.append(DetectedError(SqlErrors.ADDITIONAL_SEMICOLON))
+                    results.append(DetectedError(
+                        SqlErrors.ADDITIONAL_SEMICOLON,
+                        message='An extra semicolon splits or interrupts the SQL statement.',
+                    ))
                     continue
 
                 # semicolon for the first time, let's keep it unless it's before any actual token
@@ -203,11 +206,17 @@ class SyntaxErrorDetector(BaseDetector):
                         continue
 
                     # multiple semicolons before actual tokens, let's skip it
-                    results.append(DetectedError(SqlErrors.ADDITIONAL_SEMICOLON))
+                    results.append(DetectedError(
+                        SqlErrors.ADDITIONAL_SEMICOLON,
+                        message='An extra semicolon splits or interrupts the SQL statement.',
+                    ))
                     continue
 
                 # semicolon after the first one, let's flag it as an error and skip it
-                results.append(DetectedError(SqlErrors.ADDITIONAL_SEMICOLON))
+                results.append(DetectedError(
+                    SqlErrors.ADDITIONAL_SEMICOLON,
+                    message='An extra semicolon splits or interrupts the SQL statement.',
+                ))
                 continue
             
             # any other token
@@ -222,9 +231,15 @@ class SyntaxErrorDetector(BaseDetector):
                 trailing_semicolon_found = False
                 
         if not trailing_semicolon_found:
-            results.append(DetectedError(SqlErrors.OMITTED_SEMICOLON))
+            results.append(DetectedError(
+                SqlErrors.OMITTED_SEMICOLON,
+                message='A semicolon is missing at the end of a SQL statement.',
+            ))
         if tokens_after_semicolon:
-            results.append(DetectedError(SqlErrors.ADDITIONAL_SEMICOLON))
+            results.append(DetectedError(
+                SqlErrors.ADDITIONAL_SEMICOLON,
+                message='An extra semicolon splits or interrupts the SQL statement.',
+            ))
 
         return (results, ''.join([token.value for token in good_tokens]))
     # endregion
@@ -256,11 +271,19 @@ class SyntaxErrorDetector(BaseDetector):
                 if schema_name:
                     # Fully qualified table (schema.table)
                     if not select.catalog.lookup_schema(schema_name):
-                        results.append(DetectedError(SqlErrors.INVALID_SCHEMA_NAME, (table.sql(),)))
+                        results.append(DetectedError(
+                            SqlErrors.INVALID_SCHEMA_NAME,
+                            data=(table.sql(),),
+                            message=f'The schema referenced by {table.sql()} could not be found in the database.',
+                        ))
                         continue
 
                     if not select.catalog.has_table(schema_name, table_name):
-                        results.append(DetectedError(SqlErrors.UNDEFINED_OBJECT, (table.sql(),)))
+                        results.append(DetectedError(
+                            SqlErrors.UNDEFINED_OBJECT,
+                            data=(table.sql(),),
+                            message=f'The table or database object {table.sql()} could not be found.',
+                        ))
                         continue
                 else:
                     # Unqualified table (table)
@@ -272,7 +295,11 @@ class SyntaxErrorDetector(BaseDetector):
                     if select.catalog.has_table(select.search_path, table_name):
                         continue
 
-                    results.append(DetectedError(SqlErrors.UNDEFINED_OBJECT, (table.sql(),)))
+                    results.append(DetectedError(
+                        SqlErrors.UNDEFINED_OBJECT,
+                        data=(table.sql(),),
+                        message=f'The table or database object {table.sql()} could not be found.',
+                    ))
 
         return results
 
@@ -352,7 +379,11 @@ class SyntaxErrorDetector(BaseDetector):
                         possible_output_matches = [m for m in select_columns if m == column_name]
 
                 if len(possible_matches) == 0 and len(possible_output_matches) == 0 and column_name and column_name.upper() not in special_names:
-                    results.append(DetectedError(SqlErrors.UNDEFINED_COLUMN, (column.sql(),)))
+                    results.append(DetectedError(
+                        SqlErrors.UNDEFINED_COLUMN,
+                        data=(column.sql(),),
+                        message=f'The column {column.sql()} could not be found in the tables available to this part of the query.',
+                    ))
                     continue
 
                 # If the select is a subquery, we can discard columns defined in the parent, since the subquery tables have precedence over them
@@ -397,7 +428,11 @@ class SyntaxErrorDetector(BaseDetector):
                     continue
 
                 if len(possible_matches) > 1:
-                    results.append(DetectedError(SqlErrors.AMBIGUOUS_COLUMN, (column.sql(), possible_matches)))
+                    results.append(DetectedError(
+                        SqlErrors.AMBIGUOUS_COLUMN,
+                        data=(column.sql(), possible_matches),
+                        message=f'The column {column.sql()} matches multiple columns: {possible_matches}. Specify the table or alias to identify which one you mean.',
+                    ))
 
         return results
 
@@ -428,7 +463,11 @@ class SyntaxErrorDetector(BaseDetector):
             if self.query.catalog.has_function(self.query.search_path, func_name.lower()):
                 continue
 
-            results.append(DetectedError(SqlErrors.UNDEFINED_FUNCTION, (func_name, clause)))
+            results.append(DetectedError(
+                SqlErrors.UNDEFINED_FUNCTION,
+                data=(func_name, clause),
+                message=f'The function {func_name} used in {clause} is not available in the database.',
+            ))
 
         return results
 
@@ -439,7 +478,11 @@ class SyntaxErrorDetector(BaseDetector):
 
         for token, val in self.query.tokens:
             if any(val.startswith(p) for p in (':', '@', '?')) and val != '::':
-                results.append(DetectedError(SqlErrors.UNDEFINED_PARAMETER, (val,)))
+                results.append(DetectedError(
+                    SqlErrors.UNDEFINED_PARAMETER,
+                    data=(val,),
+                    message=f'The parameter {val} is not defined, or a placeholder is used where this query requires an actual value.',
+                ))
 
         return results
     
@@ -510,7 +553,11 @@ class SyntaxErrorDetector(BaseDetector):
                         table.set('this', exp.to_identifier(t, quoted=True))
                         
                         table_str = self._detect_9_misspellings_expression_to_str(table)
-                        results.add(DetectedError(SqlErrors.MISSPELLINGS, (table_str_original, table_str)))
+                        results.add(DetectedError(
+                            SqlErrors.MISSPELLINGS,
+                            data=(table_str_original, table_str),
+                            message=f'The name {table_str_original} appears to be misspelled; an available name is {table_str}.',
+                        ))
                     continue
                 
                 else:
@@ -532,7 +579,11 @@ class SyntaxErrorDetector(BaseDetector):
                             table.set('db', exp.TableAlias(this=exp.to_identifier(db, quoted=True)))
 
                         table_str = self._detect_9_misspellings_expression_to_str(table)
-                        results.add(DetectedError(SqlErrors.MISSPELLINGS, (table_str_original, table_str)))
+                        results.add(DetectedError(
+                            SqlErrors.MISSPELLINGS,
+                            data=(table_str_original, table_str),
+                            message=f'The name {table_str_original} appears to be misspelled; an available name is {table_str}.',
+                        ))
 
         return [*results]     
 
@@ -591,7 +642,11 @@ class SyntaxErrorDetector(BaseDetector):
                         column.set('this', exp.to_identifier(match[0], quoted=True))
                     
                     column_str = self._detect_9_misspellings_expression_to_str(column)
-                    results.add(DetectedError(SqlErrors.MISSPELLINGS, (column_str_original, column_str)))
+                    results.add(DetectedError(
+                        SqlErrors.MISSPELLINGS,
+                        data=(column_str_original, column_str),
+                        message=f'The name {column_str_original} appears to be misspelled; an available name is {column_str}.',
+                    ))
 
         return [*results]
     
@@ -675,7 +730,11 @@ class SyntaxErrorDetector(BaseDetector):
                 if is_where_or_having and is_rhs_of_comparison:
                     stripped_val = val.strip()
                     if stripped_val.startswith('"') and stripped_val.endswith('"'):
-                        results.append(DetectedError(SqlErrors.SYN_11_OMITTING_QUOTES_AROUND_CHARACTER_DATA, (val,)))
+                        results.append(DetectedError(
+                            SqlErrors.OMITTED_QUOTES,
+                            data=(val,),
+                            message=f'The text value {val} needs single quotes so SQL treats it as text rather than a column name.',
+                        ))
                 is_rhs_of_comparison = False
                 continue
             if tt is not sqlparse.tokens.Name:
@@ -702,7 +761,11 @@ class SyntaxErrorDetector(BaseDetector):
             # TODO: literal or string.single/string.symbol in RHS of WHERE/HAVING
             if is_where_or_having and is_rhs_of_comparison:
                 if clean_val.isalpha() and clean_val.lower() not in all_known_columns_lower:
-                    results.append(DetectedError(SqlErrors.SYN_11_OMITTING_QUOTES_AROUND_CHARACTER_DATA, (val,)))
+                    results.append(DetectedError(
+                        SqlErrors.OMITTED_QUOTES,
+                        data=(val,),
+                        message=f'The text value {val} needs single quotes so SQL treats it as text rather than a column name.',
+                    ))
                     is_rhs_of_comparison = False
                     continue
             
@@ -808,7 +871,11 @@ class SyntaxErrorDetector(BaseDetector):
                 if val_stripped in nonstandard_ops:
                     if val_stripped not in language_specific_ops.get(self.query.dialect, []):
                         correction = nonstandard_ops[val_stripped]
-                        results.append(DetectedError(SqlErrors.NONSTANDARD_OPERATORS, (val_stripped, correction)))
+                        results.append(DetectedError(
+                            SqlErrors.NONSTANDARD_OPERATORS,
+                            data=(val_stripped, correction),
+                            message=f'The operator {val_stripped} is not supported here; the supported form is {correction}.',
+                        ))
 
         return results
     # endregion
@@ -843,11 +910,19 @@ class SyntaxErrorDetector(BaseDetector):
                 else:
                     # compare with expected output type
                     if expected_output != columns_type:
-                        errors.append(DetectedError(SqlErrors.DATA_TYPE_MISMATCH, (location,"setop types inconsistent")))
+                        errors.append(DetectedError(
+                            SqlErrors.DATA_TYPE_MISMATCH,
+                            data=(location, 'setop types inconsistent'),
+                            message=f'The queries combined by the set operation in {location} return incompatible column types.',
+                        ))
 
                 # load found messages
                 for message in columns_type.messages:
-                    errors.append(DetectedError(SqlErrors.DATA_TYPE_MISMATCH, message))
+                    errors.append(DetectedError(
+                        SqlErrors.DATA_TYPE_MISMATCH,
+                        data=message,
+                        message=f'The expression {message[0]} has incompatible types: found {message[1]}; expected {message[2]}.',
+                    ))
 
             return errors
 
@@ -875,7 +950,11 @@ class SyntaxErrorDetector(BaseDetector):
             function_name = function.get_name()
             if function_name and function_name.upper() in {'SUM', 'AVG', 'COUNT', 'MIN', 'MAX'}:
                 if clause not in {'SELECT', 'HAVING', 'ORDER BY'}:   # allow ORDER BY as well, as some databases support aggregates there
-                    results.append(DetectedError(SqlErrors.AGGREGATE_FUNCTION_OUTSIDE_SELECT_OR_HAVING, (function_name, clause)))
+                    results.append(DetectedError(
+                        SqlErrors.AGGREGATE_FUNCTION_OUTSIDE_SELECT_OR_HAVING,
+                        data=(function_name, clause),
+                        message=f'The aggregate function {function_name} appears in {clause}, where functions that summarize rows are not allowed.',
+                    ))
 
         return results
     
@@ -899,7 +978,8 @@ class SyntaxErrorDetector(BaseDetector):
                 for inner_agg in inner.find_all(exp.AggFunc):
                     results.append(DetectedError(
                         SqlErrors.AGGREGATE_FUNCTIONS_CANNOT_BE_NESTED,
-                        (outer_agg.sql(),)
+                        data=(outer_agg.sql(),),
+                        message=f'The expression {outer_agg.sql()} places one aggregate function directly inside another.',
                     ))
 
         return results
@@ -1032,13 +1112,21 @@ class SyntaxErrorDetector(BaseDetector):
                     if constraint_satisfied:
                         continue    # valid: PK/UNIQUE constraint satisfied in GROUP BY
 
-                results.append(DetectedError(SqlErrors.EXTRANEOUS_OR_OMITTED_GROUPING_COLUMN,(select_col.name, 'ONLY IN SELECT')))
+                results.append(DetectedError(
+                    SqlErrors.EXTRANEOUS_OR_OMITTED_GROUPING_COLUMN,
+                    data=(select_col.name, 'ONLY IN SELECT'),
+                    message=f'The column {select_col.name} is selected without being aggregated, but is missing from GROUP BY.',
+                ))
 
             # Ensure aggregated columns are not in GROUP BY
             # (Note: aggregated columns in GROUP BY are invalid)
             for group_col in group_by_columns:
                 if group_col.is_aggregated:
-                    results.append(DetectedError(SqlErrors.EXTRANEOUS_OR_OMITTED_GROUPING_COLUMN,(group_col.name, 'AGGREGATED IN GROUP BY')))
+                    results.append(DetectedError(
+                        SqlErrors.EXTRANEOUS_OR_OMITTED_GROUPING_COLUMN,
+                        data=(group_col.name, 'AGGREGATED IN GROUP BY'),
+                        message=f'GROUP BY includes the aggregate expression {group_col.name}, but grouping must use values from individual rows.',
+                    ))
                     continue
                 if any(group_col.name == select_col.name or group_col.alias == select_col.alias for select_col in select_columns):
                     continue # valid: in SELECT
@@ -1055,7 +1143,10 @@ class SyntaxErrorDetector(BaseDetector):
 
         for select in self.query.selects:
             if select.having and not select.group_by:
-                results.append(DetectedError(SqlErrors.HAVING_WITHOUT_GROUP_BY))
+                results.append(DetectedError(
+                    SqlErrors.HAVING_WITHOUT_GROUP_BY,
+                    message='The query uses HAVING to filter grouped results without a corresponding GROUP BY clause.',
+                ))
 
         return results
     
@@ -1082,7 +1173,11 @@ class SyntaxErrorDetector(BaseDetector):
                     where_count += 1
 
             if where_count > 1:
-                results.append(DetectedError(SqlErrors.USING_WHERE_TWICE, (select.sql, where_count)))
+                results.append(DetectedError(
+                    SqlErrors.USING_WHERE_TWICE,
+                    data=(select.sql, where_count),
+                    message=f'This SELECT contains {where_count} WHERE clauses; a SELECT can have only one WHERE clause.',
+                ))
 
         return results
 
@@ -1116,7 +1211,11 @@ class SyntaxErrorDetector(BaseDetector):
                         # valid functions not properly recognized by sqlglot
                         continue
                     
-                    results.append(DetectedError(SqlErrors.OMITTED_FROM_CLAUSE, (select.sql,)))
+                    results.append(DetectedError(
+                        SqlErrors.OMITTED_FROM_CLAUSE,
+                        data=(select.sql,),
+                        message=f'The query {select.sql} refers to table columns without specifying which table to read in FROM.',
+                    ))
                     break   # no need to check further columns, one is enough to flag the error
 
                 
@@ -1154,7 +1253,11 @@ class SyntaxErrorDetector(BaseDetector):
                 left = comparison.left
                 right = comparison.right
                 if (isinstance(left, exp.Null) or isinstance(right, exp.Null)):
-                    results.append(DetectedError(SqlErrors.COMPARISON_WITH_NULL, (comparison.sql(),)))
+                    results.append(DetectedError(
+                        SqlErrors.COMPARISON_WITH_NULL,
+                        data=(comparison.sql(),),
+                        message=f'The comparison {comparison.sql()} uses an ordinary comparison with NULL, which produces an unknown result instead of testing whether a value is missing.',
+                    ))
 
         return results
 
@@ -1191,7 +1294,11 @@ class SyntaxErrorDetector(BaseDetector):
                         if depth in clause_count:
                             for clause, count in clause_count[depth].items():
                                 if count > 1:
-                                    results.append(DetectedError(SqlErrors.DUPLICATE_CLAUSE, (clause, count)))
+                                    results.append(DetectedError(
+                                        SqlErrors.DUPLICATE_CLAUSE,
+                                        data=(clause, count),
+                                        message=f'The {clause} clause appears {count} times in the same SELECT.',
+                                    ))
                         clause_count[depth] = {}
                     elif val == ')':
                         depth -= 1
@@ -1204,7 +1311,11 @@ class SyntaxErrorDetector(BaseDetector):
             for depth, counter in clause_count.items():
                 for clause, count in counter.items():
                     if count > 1:
-                        results.append(DetectedError(SqlErrors.DUPLICATE_CLAUSE, (clause, count)))
+                        results.append(DetectedError(
+                            SqlErrors.DUPLICATE_CLAUSE,
+                            data=(clause, count),
+                            message=f'The {clause} clause appears {count} times in the same SELECT.',
+                        ))
 
         return results
 
@@ -1226,7 +1337,11 @@ class SyntaxErrorDetector(BaseDetector):
                 
                 col_difference = output_columns - expected_columns
                 if col_difference != 0:
-                    results.append(DetectedError(SqlErrors.TOO_MANY_COLUMNS_IN_SUBQUERY, (subquery.sql, col_difference)))
+                    results.append(DetectedError(
+                        SqlErrors.TOO_MANY_COLUMNS_IN_SUBQUERY,
+                        data=(subquery.sql, col_difference),
+                        message=f'The subquery {subquery.sql} returns {col_difference} more columns than the surrounding expression accepts.',
+                    ))
 
         return results
     
@@ -1303,7 +1418,8 @@ class SyntaxErrorDetector(BaseDetector):
             if actual_order != sorted(actual_order):
                 results.append(DetectedError(
                     SqlErrors.CONFUSED_ORDER_OF_KEYWORDS,
-                    ([str(kw) for kw in actual_order],)
+                    data=([str(kw) for kw in actual_order],),
+                    message=f'The clauses appear in this order: {[str(kw) for kw in actual_order]}. SQL requires SELECT, FROM, WHERE, GROUP BY, HAVING, ORDER BY, LIMIT, and OFFSET in that order when present.',
                 ))
 
         return results
@@ -1390,11 +1506,23 @@ class SyntaxErrorDetector(BaseDetector):
 
         # Check for imbalance
         if round_open != round_close:
-            results.append(DetectedError(SqlErrors.UNMATCHED_BRACKETS, ('round', round_open, round_close)))
+            results.append(DetectedError(
+                SqlErrors.UNMATCHED_BRACKETS,
+                data=('round', round_open, round_close),
+                message=f'The query has {round_open} opening and {round_close} closing parentheses, so they do not match.',
+            ))
         if square_open > 0 or square_close > 0:
-            results.append(DetectedError(SqlErrors.CURLY_OR_SQUARE_BRACKETS, ('square', square_open, square_close)))
+            results.append(DetectedError(
+                SqlErrors.CURLY_OR_SQUARE_BRACKETS,
+                data=('square', square_open, square_close),
+                message=f"The query uses square brackets ({square_open} opening and {square_close} closing) where SQL expects parentheses.",
+            ))
         if curly_open > 0 or curly_close > 0:
-            results.append(DetectedError(SqlErrors.CURLY_OR_SQUARE_BRACKETS, ('curly', curly_open, curly_close)))
+            results.append(DetectedError(
+                SqlErrors.CURLY_OR_SQUARE_BRACKETS,
+                data=('curly', curly_open, curly_close),
+                message=f"The query uses curly brackets ({curly_open} opening and {curly_close} closing) where SQL expects parentheses.",
+            ))
 
         return results
 
@@ -1421,7 +1549,11 @@ class SyntaxErrorDetector(BaseDetector):
 
                         # if the expected type is boolean|null, it means that the part after IS is not valid
                         if error[2] == 'boolean|null':
-                            errors.append(DetectedError(SqlErrors.IS_WHERE_NOT_APPLICABLE, error))
+                            errors.append(DetectedError(
+                                SqlErrors.IS_WHERE_NOT_APPLICABLE,
+                                data=error,
+                                message=f'The expression {error} uses IS for a value comparison; IS checks NULL or boolean values, while ordinary values require a comparison such as = or <>.',
+                            ))
 
             return errors
 

@@ -128,3 +128,22 @@ Special thanks to Davide Miggiano and Flavio Venturini for their valuable contri
 | 103   | COM       | Complication                          | Condition in the subquery can be moved up                             |            |          |     |
 | 104   | COM       | Complication                          | Condition on left table in LEFT OUTER JOIN                            |            |          |     |
 | 105   | COM       | Complication                          | OUTER JOIN can be replaced by INNER JOIN                              |            |          |     |
+
+### Detected error messages
+
+Every `DetectedError` requires a non-empty, plain-language `message`. Detectors
+provide an explanation of the specific finding, including the relevant SQL
+names or expressions. The `data` tuple remains available for structured details.
+
+```python
+DetectedError(
+    SqlErrors.UNDEFINED_COLUMN,
+    data=('student_age',),
+    message='The column student_age could not be found in the available tables.',
+)
+```
+
+Message wording follows the [SQLerrors taxonomy](https://github.com/DavidePonzini/sqlerrors/blob/main/README.md)
+and the individual definitions linked from it. Messages describe the observed
+problem and its SQL context without guessing the student's intent. `message` is
+a required dataclass field; detectors supply it explicitly.

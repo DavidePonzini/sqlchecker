@@ -224,13 +224,25 @@ class LogicalErrorDetector(BaseDetector):
 
         if len(actual_tables) < len(common_expected_tables):
             for missing_table in common_expected_tables - actual_tables:
-                results.append(DetectedError(SqlErrors.MISSING_TABLE_REFERENCE, (missing_table.table, missing_table.column)))
+                results.append(DetectedError(
+                    SqlErrors.MISSING_TABLE_REFERENCE,
+                    data=(missing_table.table, missing_table.column),
+                    message=f'The query is missing the table reference {missing_table.table} needed for column {missing_table.column} in the exercise requirements.',
+                ))
         elif len(actual_tables) > len(all_expected_tables):
             for extra_table in actual_tables - all_expected_tables:
-                results.append(DetectedError(SqlErrors.EXTRANEOUS_TABLE_REFERENCE, (extra_table.table, extra_table.column)))
+                results.append(DetectedError(
+                    SqlErrors.EXTRANEOUS_TABLE_REFERENCE,
+                    data=(extra_table.table, extra_table.column),
+                    message=f'The table reference {extra_table.table} for column {extra_table.column} is extra compared with the exercise requirements.',
+                ))
         else:
             for wrong_table in actual_tables - all_expected_tables:
-                results.append(DetectedError(SqlErrors.INCORRECT_TABLE_REFERENCE, (wrong_table.table, wrong_table.column)))
+                results.append(DetectedError(
+                    SqlErrors.INCORRECT_TABLE_REFERENCE,
+                    data=(wrong_table.table, wrong_table.column),
+                    message=f'The table reference {wrong_table.table} for column {wrong_table.column} differs from the exercise requirements.',
+                ))
 
         return results
 
@@ -316,18 +328,34 @@ class LogicalErrorDetector(BaseDetector):
 
                 if isinstance(left, exp.Literal):
                     if not allow_underscore and has_character(left, '_'):
-                        results.append(DetectedError(SqlErrors.WILDCARDS_WITHOUT_LIKE, (str(eq),)))
+                        results.append(DetectedError(
+                            SqlErrors.WILDCARDS_WITHOUT_LIKE,
+                            data=(str(eq),),
+                            message=f'The comparison {str(eq)} contains wildcard characters but does not use LIKE, so the wildcards are treated as ordinary text.',
+                        ))
                         continue
                     if not allow_percent and has_character(left, '%'):
-                        results.append(DetectedError(SqlErrors.WILDCARDS_WITHOUT_LIKE, (str(eq),)))
+                        results.append(DetectedError(
+                            SqlErrors.WILDCARDS_WITHOUT_LIKE,
+                            data=(str(eq),),
+                            message=f'The comparison {str(eq)} contains wildcard characters but does not use LIKE, so the wildcards are treated as ordinary text.',
+                        ))
                         continue
 
                 if isinstance(right, exp.Literal):
                     if not allow_underscore and has_character(right, '_'):
-                        results.append(DetectedError(SqlErrors.WILDCARDS_WITHOUT_LIKE, (str(eq),)))
+                        results.append(DetectedError(
+                            SqlErrors.WILDCARDS_WITHOUT_LIKE,
+                            data=(str(eq),),
+                            message=f'The comparison {str(eq)} contains wildcard characters but does not use LIKE, so the wildcards are treated as ordinary text.',
+                        ))
                         continue
                     if not allow_percent and has_character(right, '%'):
-                        results.append(DetectedError(SqlErrors.WILDCARDS_WITHOUT_LIKE, (str(eq),)))
+                        results.append(DetectedError(
+                            SqlErrors.WILDCARDS_WITHOUT_LIKE,
+                            data=(str(eq),),
+                            message=f'The comparison {str(eq)} contains wildcard characters but does not use LIKE, so the wildcards are treated as ordinary text.',
+                        ))
                         continue
 
         return results
@@ -383,22 +411,38 @@ class LogicalErrorDetector(BaseDetector):
                     # query contains '*' while solution does not
                     # most likely an attempt to use '%' wildcard
                     if not star_in_solution and has_character(pattern, '*'):
-                        results.append(DetectedError(SqlErrors.INVALID_WILDCARD, (str(like),)))
+                        results.append(DetectedError(
+                            SqlErrors.INVALID_WILDCARD,
+                            data=(str(like),),
+                            message=f'The pattern in {str(like)} uses characters that are not valid SQL wildcards for the intended match.',
+                        ))
 
                     # query contains '?' while solution does not
                     # most likely an attempt to use '_' wildcard
                     if not question_mark_in_solution and has_character(pattern, '?'):
-                        results.append(DetectedError(SqlErrors.INVALID_WILDCARD, (str(like),)))
+                        results.append(DetectedError(
+                            SqlErrors.INVALID_WILDCARD,
+                            data=(str(like),),
+                            message=f'The pattern in {str(like)} uses characters that are not valid SQL wildcards for the intended match.',
+                        ))
 
                     # '_' instead of '%'
                     if percent_in_solution and not underscore_in_solution:
                         if has_character(pattern, '_') and not has_character(pattern, '%'):
-                            results.append(DetectedError(SqlErrors.WRONG_WILDCARD, (str(like),)))
+                            results.append(DetectedError(
+                                SqlErrors.WRONG_WILDCARD,
+                                data=(str(like),),
+                                message=f'The wildcard in {str(like)} matches a different amount of text than intended.',
+                            ))
 
                     # '%' instead of '_'
                     if underscore_in_solution and not percent_in_solution:
                         if has_character(pattern, '%') and not has_character(pattern, '_'):
-                            results.append(DetectedError(SqlErrors.WRONG_WILDCARD, (str(like),)))
+                            results.append(DetectedError(
+                                SqlErrors.WRONG_WILDCARD,
+                                data=(str(like),),
+                                message=f'The wildcard in {str(like)} matches a different amount of text than intended.',
+                            ))
 
 
         
@@ -416,7 +460,11 @@ class LogicalErrorDetector(BaseDetector):
         column_number_provided = len(self.query.main_query.output.columns)
 
         if column_number_provided > column_number_required_max:
-            results.append(DetectedError(SqlErrors.EXTRANEOUS_COLUMN_IN_SELECT, (column_number_provided, column_number_required_max)))
+            results.append(DetectedError(
+                SqlErrors.EXTRANEOUS_COLUMN_IN_SELECT,
+                data=(column_number_provided, column_number_required_max),
+                message=f'The query returns {column_number_provided} columns, but the exercise requires at most {column_number_required_max}.',
+            ))
 
         # Then, check for specific extraneous columns
         columns_required = set.union(*[sol.output_columns_source for sol in self.solutions])
@@ -424,7 +472,11 @@ class LogicalErrorDetector(BaseDetector):
         extraneous_columns = columns_provided - columns_required
 
         for schema, table, column in extraneous_columns:
-            results.append(DetectedError(SqlErrors.EXTRANEOUS_COLUMN_IN_SELECT, (schema, table, column)))
+            results.append(DetectedError(
+                SqlErrors.EXTRANEOUS_COLUMN_IN_SELECT,
+                data=(schema, table, column),
+                message=f'The output column {schema}.{table}.{column} is extra compared with the exercise requirements.',
+            ))
 
         return results
     
@@ -440,7 +492,11 @@ class LogicalErrorDetector(BaseDetector):
         column_number_provided = len(self.query.main_query.output.columns)
 
         if column_number_provided < column_number_required_min:
-            results.append(DetectedError(SqlErrors.MISSING_COLUMN_FROM_SELECT, (column_number_provided, column_number_required_min)))
+            results.append(DetectedError(
+                SqlErrors.MISSING_COLUMN_FROM_SELECT,
+                data=(column_number_provided, column_number_required_min),
+                message=f'The query returns {column_number_provided} columns, but the exercise requires at least {column_number_required_min}.',
+            ))
 
         # Then, check for specific missing columns
         columns_required = set.union(*[sol.output_columns_source for sol in self.solutions])
@@ -448,7 +504,11 @@ class LogicalErrorDetector(BaseDetector):
         missing_columns = columns_required - columns_provided
 
         for schema, table, column in missing_columns:
-            results.append(DetectedError(SqlErrors.MISSING_COLUMN_FROM_SELECT, (schema, table, column)))
+            results.append(DetectedError(
+                SqlErrors.MISSING_COLUMN_FROM_SELECT,
+                data=(schema, table, column),
+                message=f'The output column {schema}.{table}.{column} is missing compared with the exercise requirements.',
+            ))
 
         return results
     
@@ -471,7 +531,10 @@ class LogicalErrorDetector(BaseDetector):
             return []
         
         if not _is_distinct(self.query.main_query):
-            return [DetectedError(SqlErrors.MISSING_DISTINCT_FROM_SELECT)]
+            return [DetectedError(
+                SqlErrors.MISSING_DISTINCT_FROM_SELECT,
+                message='The query may return repeated rows where the exercise requires unique rows.',
+            )]
         
         return []
 
@@ -496,7 +559,11 @@ class LogicalErrorDetector(BaseDetector):
         missing_aliases = expected_aliases - provided_aliases
 
         for alias in missing_aliases:
-            results.append(DetectedError(SqlErrors.MISSING_AS_FROM_SELECT, (alias,)))
+            results.append(DetectedError(
+                SqlErrors.MISSING_AS_FROM_SELECT,
+                data=(alias,),
+                message=f'An output column is missing the expected alias {alias}.',
+            ))
 
         return results
 
@@ -578,9 +645,15 @@ class LogicalErrorDetector(BaseDetector):
         user_has_where = any(select.where for select in self.query.selects)
 
         if solution_has_where == {True} and not user_has_where:
-            results.append(DetectedError(SqlErrors.MISSING_WHERE_CLAUSE))
+            results.append(DetectedError(
+                SqlErrors.MISSING_WHERE_CLAUSE,
+                message='The query is missing WHERE, which the exercise requires to filter individual rows.',
+            ))
         elif solution_has_where == {False} and user_has_where:
-            results.append(DetectedError(SqlErrors.EXTRANEOUS_WHERE_CLAUSE))
+            results.append(DetectedError(
+                SqlErrors.EXTRANEOUS_WHERE_CLAUSE,
+                message='The query uses WHERE to filter individual rows, although the exercise does not require it.',
+            ))
 
         return results
     
@@ -597,9 +670,15 @@ class LogicalErrorDetector(BaseDetector):
         user_has_group_by = any(select.group_by for select in self.query.selects)
 
         if solution_has_group_by == {True} and not user_has_group_by:
-            results.append(DetectedError(SqlErrors.MISSING_GROUP_BY_CLAUSE))
+            results.append(DetectedError(
+                SqlErrors.MISSING_GROUP_BY_CLAUSE,
+                message='The query is missing GROUP BY, which the exercise requires to combine rows into groups.',
+            ))
         elif solution_has_group_by == {False} and user_has_group_by:
-            results.append(DetectedError(SqlErrors.EXTRANEOUS_GROUP_BY_CLAUSE))
+            results.append(DetectedError(
+                SqlErrors.EXTRANEOUS_GROUP_BY_CLAUSE,
+                message='The query uses GROUP BY to combine rows into groups, although the exercise does not require it.',
+            ))
     
         return results
     
@@ -616,9 +695,15 @@ class LogicalErrorDetector(BaseDetector):
         user_has_having = any(select.having for select in self.query.selects)
 
         if solution_has_having == {True} and not user_has_having:
-            results.append(DetectedError(SqlErrors.MISSING_HAVING_CLAUSE))
+            results.append(DetectedError(
+                SqlErrors.MISSING_HAVING_CLAUSE,
+                message='The query is missing HAVING, which the exercise requires to filter groups.',
+            ))
         elif solution_has_having == {False} and user_has_having:
-            results.append(DetectedError(SqlErrors.EXTRANEOUS_HAVING_CLAUSE))
+            results.append(DetectedError(
+                SqlErrors.EXTRANEOUS_HAVING_CLAUSE,
+                message='The query uses HAVING to filter groups, although the exercise does not require it.',
+            ))
 
         return results
 
@@ -635,9 +720,15 @@ class LogicalErrorDetector(BaseDetector):
         user_has_order_by = any(select.order_by for select in self.query.selects)
 
         if solution_has_order_by == {True} and not user_has_order_by:
-            results.append(DetectedError(SqlErrors.MISSING_ORDER_BY_CLAUSE))
+            results.append(DetectedError(
+                SqlErrors.MISSING_ORDER_BY_CLAUSE,
+                message='The query is missing ORDER BY, which the exercise requires to sort the result rows.',
+            ))
         elif solution_has_order_by == {False} and user_has_order_by:
-            results.append(DetectedError(SqlErrors.EXTRANEOUS_ORDER_BY_CLAUSE))
+            results.append(DetectedError(
+                SqlErrors.EXTRANEOUS_ORDER_BY_CLAUSE,
+                message='The query uses ORDER BY to sort the result rows, although the exercise does not require it.',
+            ))
 
         return results
 
@@ -666,11 +757,21 @@ class LogicalErrorDetector(BaseDetector):
         solution_limits.discard(None)  # remove None if present, since we already handled the case where some solutions have limits and others don't
 
         if solution_limits and not user_limits:
-            results.append(DetectedError(SqlErrors.MISSING_LIMIT_CLAUSE))
+            results.append(DetectedError(
+                SqlErrors.MISSING_LIMIT_CLAUSE,
+                message='The query is missing LIMIT, which the exercise requires to restrict the number of returned rows.',
+            ))
         elif not solution_limits and user_limits:
-            results.append(DetectedError(SqlErrors.EXTRANEOUS_LIMIT_CLAUSE))
+            results.append(DetectedError(
+                SqlErrors.EXTRANEOUS_LIMIT_CLAUSE,
+                message='The query uses LIMIT to restrict the number of returned rows, although the exercise does not require it.',
+            ))
         elif solution_limits and user_limits and not user_limits.issubset(solution_limits):
-            results.append(DetectedError(SqlErrors.INCORRECT_LIMIT, (user_limits, solution_limits)))
+            results.append(DetectedError(
+                SqlErrors.INCORRECT_LIMIT,
+                data=(user_limits, solution_limits),
+                message=f'The query uses row limits {user_limits}, while the exercise requires {solution_limits}.',
+            ))
 
         return results
 
@@ -697,11 +798,21 @@ class LogicalErrorDetector(BaseDetector):
         solution_offsets.discard(None)  # remove None if present, since we already handled the case where some solutions have offsets and others don't
 
         if solution_offsets and not user_offsets:
-            results.append(DetectedError(SqlErrors.MISSING_OFFSET_CLAUSE))
+            results.append(DetectedError(
+                SqlErrors.MISSING_OFFSET_CLAUSE,
+                message='The query is missing OFFSET, which the exercise requires to skip rows before returning results.',
+            ))
         elif not solution_offsets and user_offsets:
-            results.append(DetectedError(SqlErrors.EXTRANEOUS_OFFSET_CLAUSE))
+            results.append(DetectedError(
+                SqlErrors.EXTRANEOUS_OFFSET_CLAUSE,
+                message='The query uses OFFSET to skip rows before returning results, although the exercise does not require it.',
+            ))
         elif solution_offsets and user_offsets and not user_offsets.issubset(solution_offsets):
-            results.append(DetectedError(SqlErrors.INCORRECT_OFFSET, (user_offsets, solution_offsets)))
+            results.append(DetectedError(
+                SqlErrors.INCORRECT_OFFSET,
+                data=(user_offsets, solution_offsets),
+                message=f'The query skips rows using offsets {user_offsets}, while the exercise requires {solution_offsets}.',
+            ))
 
         return results
 

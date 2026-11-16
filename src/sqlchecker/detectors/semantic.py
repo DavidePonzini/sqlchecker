@@ -71,16 +71,28 @@ class SemanticErrorDetector(BaseDetector):
                 continue  # skip if cannot convert to z3
 
             if not smt.is_satisfiable(whole):
-                results.append(DetectedError(SqlErrors.IMPLIED_TAUTOLOGICAL_OR_INCONSISTENT_EXPRESSION, ('contradiction',)))
+                results.append(DetectedError(
+                    SqlErrors.IMPLIED_TAUTOLOGICAL_OR_INCONSISTENT_EXPRESSION,
+                    data=('contradiction',),
+                    message='The WHERE condition can never be true, so it cannot return any matching rows.',
+                ))
             elif not smt.is_satisfiable(Not(whole)):
-                results.append(DetectedError(SqlErrors.IMPLIED_TAUTOLOGICAL_OR_INCONSISTENT_EXPRESSION, ('tautology',)))
+                results.append(DetectedError(
+                    SqlErrors.IMPLIED_TAUTOLOGICAL_OR_INCONSISTENT_EXPRESSION,
+                    data=('tautology',),
+                    message='The WHERE condition is always true, so it does not filter out any rows.',
+                ))
                 
             # (2) each Ci redundant?
             for i, Ci in enumerate(dnf):
                     Ci_z3 = smt.sql_to_z3(Ci, variables)
                     others = Or(*[smt.sql_to_z3(C, variables) for j, C in enumerate(dnf) if j != i])
                     if not smt.is_satisfiable(And(Ci_z3, Not(others))):
-                        results.append(DetectedError(SqlErrors.IMPLIED_TAUTOLOGICAL_OR_INCONSISTENT_EXPRESSION, ('redundant_disjunct', Ci.sql())))
+                        results.append(DetectedError(
+                            SqlErrors.IMPLIED_TAUTOLOGICAL_OR_INCONSISTENT_EXPRESSION,
+                            data=('redundant_disjunct', Ci.sql()),
+                            message=f'The alternative condition {Ci.sql()} is already covered by the other alternatives, so it does not add matching rows.',
+                        ))
                     
                     # (3) each Ai,j redundant?
                     conjuncts = list(Ci.flatten())
@@ -93,7 +105,11 @@ class SemanticErrorDetector(BaseDetector):
                         others = Or(*[smt.sql_to_z3(C, variables) for k, C in enumerate(dnf) if k != i])
                         formula = And(Not(Aj_z3), *rest, Not(others))
                         if not smt.is_satisfiable(formula):
-                            results.append(DetectedError(SqlErrors.IMPLIED_TAUTOLOGICAL_OR_INCONSISTENT_EXPRESSION, ('redundant_conjunct', (Ci.sql(), Aj.sql()))))
+                            results.append(DetectedError(
+                                SqlErrors.IMPLIED_TAUTOLOGICAL_OR_INCONSISTENT_EXPRESSION,
+                                data=('redundant_conjunct', (Ci.sql(), Aj.sql())),
+                                message=f'Within {Ci.sql()}, the condition {Aj.sql()} is already implied by the other conditions, so it adds no restriction.',
+                            ))
 
         return results
 
@@ -138,13 +154,21 @@ class SemanticErrorDetector(BaseDetector):
                 # Solution does not use SUM(DISTINCT ...), so check user query
                 for func in ast.find_all(exp.Sum):
                     if func.this and isinstance(func.this, exp.Distinct):
-                        results.append(DetectedError(SqlErrors.DISTINCT_IN_SUM_OR_AVG, (func.sql(),)))
+                        results.append(DetectedError(
+                            SqlErrors.DISTINCT_IN_SUM_OR_AVG,
+                            data=(func.sql(),),
+                            message=f'The expression {func.sql()} sums or averages only unique values, so repeated values do not contribute to the calculation.',
+                        ))
 
             if not allow_avg_distinct:
                 # Solution does not use AVG(DISTINCT ...), so check user query
                 for func in ast.find_all(exp.Avg):
                     if func.this and isinstance(func.this, exp.Distinct):
-                        results.append(DetectedError(SqlErrors.DISTINCT_IN_SUM_OR_AVG, (func.sql(),)))
+                        results.append(DetectedError(
+                            SqlErrors.DISTINCT_IN_SUM_OR_AVG,
+                            data=(func.sql(),),
+                            message=f'The expression {func.sql()} sums or averages only unique values, so repeated values do not contribute to the calculation.',
+                        ))
 
         return results
     
@@ -210,7 +234,11 @@ class SemanticErrorDetector(BaseDetector):
 
         for col in output.columns:
             if col.is_constant:
-                results.append(DetectedError(SqlErrors.CONSTANT_COLUMN_OUTPUT, (col.name,)))
+                results.append(DetectedError(
+                    SqlErrors.CONSTANT_COLUMN_OUTPUT,
+                    data=(col.name,),
+                    message=f'The output column {col.name} has the same value for every returned row.',
+                ))
 
         return results
 
@@ -278,7 +306,11 @@ class SemanticErrorDetector(BaseDetector):
                         equivalent_names.update(eq_class)
 
                 if name in projected_columns:
-                    results.append(DetectedError(SqlErrors.DUPLICATE_COLUMN_OUTPUT, (select.referenced_tables[table_idx].name, column.real_name)))
+                    results.append(DetectedError(
+                        SqlErrors.DUPLICATE_COLUMN_OUTPUT,
+                        data=(select.referenced_tables[table_idx].name, column.real_name),
+                        message=f'The output repeats the values of {select.referenced_tables[table_idx].name}.{column.real_name} in multiple columns; those columns always contain identical values.',
+                    ))
 
                 projected_columns.add(name)
                 projected_columns.update(equivalent_names)
